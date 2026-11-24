@@ -40,7 +40,9 @@ const optRef = (s) => (String(s).trim() === "" ? null : int(s, 10, "reference") 
 const showRef = (v) => (v === null || v === undefined ? "" : String(v + 1));
 const hex = (v) => v.toString(16).toUpperCase();
 
-const st = { cp: C.newCodeplug(new URLSearchParams(location.search).get("model") || "D890UV"), fname: "untitled", dirty: false, sel: null, demo: null, busy: false };
+// Default radio: ?model=..., else the site path (the D168UV-CFW-CPS GitHub Pages site opens as a D168UV), else D890UV.
+const defaultModel = () => new URLSearchParams(location.search).get("model") || (/d168/i.test(location.pathname) ? "D168UV" : "D890UV");
+const st = { cp: C.newCodeplug(defaultModel()), fname: "untitled", dirty: false, sel: null, demo: null, busy: false };
 window.cps = { st, C, ST };       // for tests / the console
 
 function log(s, cls) {
