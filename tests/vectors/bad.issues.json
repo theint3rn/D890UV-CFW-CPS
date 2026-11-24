@@ -1,0 +1,77 @@
+[
+ {
+  "level": "error",
+  "where": "settings",
+  "msg": "DMR ID 99999999 out of range (1..16776415)"
+ },
+ {
+  "level": "error",
+  "where": "settings",
+  "msg": "callsign 'TOO LONG CALL': up to 8 of A-Z 0-9 /"
+ },
+ {
+  "level": "error",
+  "where": "ch 1 2M CALL",
+  "msg": "RX 300.00000 MHz outside 136-174 / 400-480 MHz"
+ },
+ {
+  "level": "warn",
+  "where": "ch 2 70CM CALL",
+  "msg": "tx_tone 99.9 Hz is not a standard CTCSS tone"
+ },
+ {
+  "level": "error",
+  "where": "ch 4 DMR TG91",
+  "msg": "colour code 16 (0..15)"
+ },
+ {
+  "level": "error",
+  "where": "ch 4 DMR TG91",
+  "msg": "contact 99 does not exist"
+ },
+ {
+  "level": "error",
+  "where": "ch 6 P25 trunk",
+  "msg": "trunk system 'T3 site' is DMR_T3, channel is P25"
+ },
+ {
+  "level": "error",
+  "where": "ch 7 P25 PH2",
+  "msg": "NAC 0x1000 (0..FFF)"
+ },
+ {
+  "level": "warn",
+  "where": "ch 7 P25 PH2",
+  "msg": "Phase 2 needs WACN + system ID for the scrambling seed"
+ },
+ {
+  "level": "error",
+  "where": "ch 8 NXDN",
+  "msg": "RAN 64 (0..63)"
+ },
+ {
+  "level": "error",
+  "where": "ch 9 DSTAR",
+  "msg": "UR 'lower': up to 8 of A-Z 0-9 / space"
+ },
+ {
+  "level": "error",
+  "where": "ch 10 YSF",
+  "msg": "DG-ID 120 (0..99)"
+ },
+ {
+  "level": "error",
+  "where": "zone 1 All",
+  "msg": "member channel 500 does not exist"
+ },
+ {
+  "level": "warn",
+  "where": "zone 1 All",
+  "msg": "duplicate members"
+ },
+ {
+  "level": "error",
+  "where": "trunk 1 Metro P25",
+  "msg": "no control channel"
+ }
+]

@@ -1,0 +1,7 @@
+[
+ {
+  "level": "warn",
+  "where": "settings",
+  "msg": "DMR ID is 0 (firmware keeps its default)"
+ }
+]

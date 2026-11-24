@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cfw Web CPS</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/cps.css">
+</head>
+<body>
+<header>
+  <strong class="brand">cfw Web CPS</strong>
+  <span id="fname" class="muted">untitled</span>
+  <nav class="files">
+    <label title="radio model: selects the stock CPS layout; changing it converts the codeplug">Radio
+      <select id="model"><option value="D890UV">D890UV</option><option value="D168UV">D168UV</option></select></label>
+    <button id="bNew">New</button>
+    <label class="btn">Open<input type="file" id="fOpen" accept=".d8cp,.json,.rdt" hidden></label>
+    <label class="btn">Import .rdt / .csv<input type="file" id="fImport" accept=".rdt,.csv" hidden></label>
+    <label class="btn" title="select the .LST and all .CSV files of a stock CPS Export All">Import stock CSV set<input type="file" id="fStock" accept=".lst,.LST,.csv,.CSV" multiple hidden></label>
+    <button id="bSave">Save .d8cp</button>
+    <button id="bSaveJson">Save .json</button>
+    <button id="bSaveRdt" title="stock CPS file of the radio model (.rdt)">Save .rdt</button>
+    <label class="btn" title="your stock CPS new file (File > New, saved): needed to save an .rdt that was not opened from one">Load .rdt template<input type="file" id="fTemplate" accept=".rdt" hidden></label>
+    <button id="bCsv">Export .csv</button>
+    <button id="bStockZip" title="stock CPS Export All format (.LST + one CSV per table), zipped">Export stock CSV set</button>
+    <button id="bPrint">Print</button>
+    <button id="bValidate">Validate</button>
+  </nav>
+</header>
+<section class="radio">
+  <label>Link
+    <select id="transport">
+      <option value="serial">Web Serial (cable / USB CDC)</option>
+      <option value="ws">WebSocket bridge</option>
+      <option value="demo">Demo radio (in page)</option>
+    </select>
+  </label>
+  <input id="wsUrl" value="ws://localhost:8765" size="22" title="tools/ws_bridge.py URL">
+  <label title="Writing to a real radio over Web Serial needs the owner's OK (README)"><input type="checkbox" id="allowHw"> allow hardware write</label>
+  <button id="bRead">Read radio</button>
+  <button id="bWrite" class="primary">Write radio</button>
+  <progress id="prog" max="100" value="0"></progress>
+  <span id="status" class="muted"></span>
+</section>
+<div class="body">
+<nav id="nav" aria-label="codeplug sections"></nav>
+<main>
+  <section id="t-channels" class="tab">
+    <div class="split">
+      <div class="left">
+        <div class="tools">
+          <input id="chFilter" placeholder="filter name / MHz / mode" size="24">
+          <button id="chNew">New</button><button id="chDup">Duplicate</button><button id="chDel">Delete</button>
+          <button id="chUp">Up</button><button id="chDown">Down</button>
+          <span id="chCount" class="muted"></span>
+        </div>
+        <div class="tablewrap"><table id="chTable"><thead><tr><th>#</th><th>Name</th><th>RX MHz</th><th>TX MHz</th><th>Mode</th><th>Details</th><th>Power</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <form id="chForm" class="editor" autocomplete="off"></form>
+    </div>
+  </section>
+  <section id="t-zones" class="tab"></section>
+  <section id="t-scanlists" class="tab"></section>
+  <section id="t-contacts" class="tab"></section>
+  <section id="t-tglists" class="tab"></section>
+  <section id="t-trunksys" class="tab"></section>
+  <section id="t-settings" class="tab"><form id="setForm" class="grid3"></form></section>
+  <section id="t-keys" class="tab"></section>
+  <section id="t-dstar" class="tab"></section>
+  <section id="t-digi" class="tab"><form id="digiForm" class="grid3"></form></section>
+  <section id="t-stock" class="tab"></section>
+  <section id="t-info" class="tab"><p id="infoText"></p></section>
+  <section id="t-log" class="tab"><pre id="log"></pre></section>
+</main>
+</div>
+<dialog id="stockDlg"><h3 id="stockDlgTitle"></h3><form id="stockDlgForm" class="grid3"></form>
+  <div class="right"><button id="stockDlgCancel">Cancel</button> <button id="stockDlgOk" class="primary">OK</button></div></dialog>
+<dialog id="diffDlg">
+  <h3>Write to radio: changes</h3>
+  <pre id="diffText"></pre>
+  <p class="muted" id="diffSum"></p>
+  <p>Codeplug only: no firmware is written.</p>
+  <div class="right"><button id="diffCancel">Cancel</button> <button id="diffOk" class="primary">Write</button></div>
+</dialog>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

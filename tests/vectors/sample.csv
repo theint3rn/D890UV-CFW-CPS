@@ -1,0 +1,11 @@
+name,rx_mhz,tx_mhz,mode,bw,power,rx_tone,tx_tone,cc,slot,tg,contact,nac,wacn,sysid,ran,dgid,ur,rpt1,rpt2,trunk,scanlist,zone
+2M CALL,146.52000,146.52000,FM,25,high,,,,,,,,,,,,,,,,1,All
+70CM CALL,446.00000,446.00000,FM,25,high,,,,,,,,,,,,,,,,,All
+RPT,146.97000,146.37000,FM,25,high,103.5,D023N,,,,,,,,,,,,,,,All
+DMR TG91,440.51250,445.51250,DMR,,high,,,1,2,91,1,,,,,,,,,,,All|Digital
+T3 CC,439.50000,434.50000,DMR,,high,,,1,1,91,,,,,,,,,,1,,All|Digital
+P25 trunk,460.50000,465.50000,P25,,high,,,,,100,,0x293,,,,,,,,1,,All|Digital
+P25 PH2,460.55000,465.55000,P25P2,,high,,,,1,0,,0x293,0xBEE00,0x3C1,,,,,,,,All
+NXDN,441.25000,441.25000,NXDN,,high,,,,,300,,,,,1,,,,,,,All
+DSTAR,145.67000,145.67000,DSTAR,,high,,,,,,,,,,,,CQCQCQ,XX0RPT B,XX0RPT G,,,All
+YSF,145.37500,0,YSF,,low,,,,,,,,,,,20,,,,,,All

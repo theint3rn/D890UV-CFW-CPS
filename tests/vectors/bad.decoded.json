@@ -1,0 +1,354 @@
+{
+ "format": "cfw-codeplug",
+ "version": 1,
+ "generation": 0,
+ "created": 1763600000,
+ "settings": {
+  "callsign": "TOO LONG",
+  "dmr_id": 99999999,
+  "p25_unit_id": 0,
+  "nxdn_unit_id": 0,
+  "rx_invert": false,
+  "key_beep": true,
+  "auto_keylock": false,
+  "boot_vfo": false,
+  "encryption": false,
+  "sms_msms": false,
+  "step_hz": 12500,
+  "deemph_us": 0,
+  "test_tone_hz": 0,
+  "backlight_level": 8,
+  "backlight_timeout_s": 0,
+  "vfo_mode": "FM",
+  "keylock_timeout_s": 0,
+  "start_channel": null,
+  "keys": [
+   "mode_next",
+   "vfo_mem",
+   "none",
+   "none",
+   "mode_next",
+   "mode_picker"
+  ],
+  "dmr_cc": 1,
+  "dmr_slot": 1,
+  "dmr_tg": 91,
+  "p25_nac": 659,
+  "nxdn_ran": 1,
+  "ysf_dgid": 0,
+  "p25_tg": 1,
+  "nxdn_group": 1,
+  "p25_wacn": 781824,
+  "p25_sysid": 961,
+  "ur": "CQCQCQ",
+  "rpt1": "",
+  "rpt2": "",
+  "dstar_msg": "",
+  "radio_name": "D890UV cfw"
+ },
+ "channels": [
+  {
+   "name": "2M CALL",
+   "rx_hz": 300000000,
+   "tx_hz": 146520000,
+   "mode": "FM",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": 0,
+   "talkaround": false,
+   "wide": true,
+   "rx_tone": null,
+   "tx_tone": null
+  },
+  {
+   "name": "70CM CALL",
+   "rx_hz": 446000000,
+   "tx_hz": 446000000,
+   "mode": "FM",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "wide": true,
+   "rx_tone": null,
+   "tx_tone": "99.9"
+  },
+  {
+   "name": "RPT",
+   "rx_hz": 146970000,
+   "tx_hz": 146370000,
+   "mode": "FM",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "wide": true,
+   "rx_tone": "103.5",
+   "tx_tone": "D023N"
+  },
+  {
+   "name": "DMR TG91",
+   "rx_hz": 440512500,
+   "tx_hz": 445512500,
+   "mode": "DMR",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "cc": 16,
+   "slot": 2,
+   "tg": 91,
+   "contact": 99,
+   "tglist": 0,
+   "trunksys": null,
+   "vocoder": "auto",
+   "key": null,
+   "tdma_direct": false
+  },
+  {
+   "name": "T3 CC",
+   "rx_hz": 439500000,
+   "tx_hz": 434500000,
+   "mode": "DMR",
+   "trunk": true,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "cc": 1,
+   "slot": 1,
+   "tg": 91,
+   "contact": null,
+   "tglist": null,
+   "trunksys": 1,
+   "vocoder": "auto",
+   "key": null,
+   "tdma_direct": false
+  },
+  {
+   "name": "P25 trunk",
+   "rx_hz": 460500000,
+   "tx_hz": 465500000,
+   "mode": "P25",
+   "trunk": true,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "nac": 659,
+   "tg": 100,
+   "contact": null,
+   "tglist": null,
+   "trunksys": 1,
+   "wacn": 0,
+   "sysid": 0,
+   "vocoder": "auto",
+   "key": null
+  },
+  {
+   "name": "P25 PH2",
+   "rx_hz": 460550000,
+   "tx_hz": 465550000,
+   "mode": "P25P2",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "nac": 4096,
+   "slot": 1,
+   "tg": 0,
+   "contact": null,
+   "tglist": null,
+   "trunksys": null,
+   "wacn": 0,
+   "sysid": 961,
+   "vocoder": "auto",
+   "key": null
+  },
+  {
+   "name": "NXDN",
+   "rx_hz": 441250000,
+   "tx_hz": 441250000,
+   "mode": "NXDN",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "ran": 64,
+   "tg": 300,
+   "contact": null,
+   "tglist": null,
+   "trunksys": null,
+   "vocoder": "auto",
+   "key": null,
+   "nxdn_rate": 4800
+  },
+  {
+   "name": "DSTAR",
+   "rx_hz": 145670000,
+   "tx_hz": 145670000,
+   "mode": "DSTAR",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "high",
+   "scanlist": null,
+   "talkaround": false,
+   "ur": "lower",
+   "rpt1": "XX0RPT B",
+   "rpt2": "XX0RPT G",
+   "vocoder": "auto",
+   "dstar_rpt": null
+  },
+  {
+   "name": "YSF",
+   "rx_hz": 145375000,
+   "tx_hz": 0,
+   "mode": "YSF",
+   "trunk": false,
+   "scan_skip": false,
+   "power": "low",
+   "scanlist": null,
+   "talkaround": false,
+   "dgid": 120,
+   "dgid_tx": null,
+   "ysf_mode": "DN",
+   "wiresx": false,
+   "vocoder": "auto"
+  }
+ ],
+ "zones": [
+  {
+   "name": "All",
+   "channels": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    500,
+    0
+   ]
+  },
+  {
+   "name": "Digital",
+   "channels": [
+    3,
+    4,
+    5
+   ]
+  }
+ ],
+ "scanlists": [
+  {
+   "name": "FM",
+   "channels": [
+    0,
+    1,
+    2
+   ],
+   "prio1": 2,
+   "prio2": null,
+   "dwell_100ms": 20,
+   "flags": 0
+  }
+ ],
+ "contacts": [
+  {
+   "name": "TG91",
+   "id": 91,
+   "kind": "group",
+   "mode": "any"
+  },
+  {
+   "name": "Local",
+   "id": 2,
+   "kind": "group",
+   "mode": "any"
+  },
+  {
+   "name": "P25 TG100",
+   "id": 100,
+   "kind": "group",
+   "mode": "P25"
+  },
+  {
+   "name": "Me",
+   "id": 9990001,
+   "kind": "private",
+   "mode": "any"
+  }
+ ],
+ "tglists": [
+  {
+   "name": "Main",
+   "contacts": [
+    0,
+    1
+   ]
+  }
+ ],
+ "trunksys": [
+  {
+   "name": "Metro P25",
+   "type": "P25",
+   "nac_cc": 659,
+   "wacn": 781824,
+   "sysid": 961,
+   "tglist": 0,
+   "control_channels": [],
+   "chan_step_hz": 12500,
+   "base_hz": 0,
+   "flags": 0,
+   "rfss": 0,
+   "site": 0,
+   "registration": false,
+   "phase2": false,
+   "bandplan": []
+  },
+  {
+   "name": "T3 site",
+   "type": "DMR_T3",
+   "nac_cc": 1,
+   "wacn": 0,
+   "sysid": 0,
+   "tglist": null,
+   "control_channels": [
+    439500000
+   ],
+   "chan_step_hz": 12500,
+   "base_hz": 0,
+   "flags": 0,
+   "rfss": 0,
+   "site": 0,
+   "registration": false,
+   "phase2": false,
+   "bandplan": []
+  }
+ ],
+ "keys": [],
+ "dstar_rpts": [],
+ "digi": {
+  "dstar_dprs": false,
+  "dstar_gps_interval_s": 0,
+  "dstar_auto_reply": false,
+  "dprs_symbol": "/[",
+  "dprs_comment": "",
+  "dmr_t3_register": false,
+  "p25_register": false,
+  "nxdn_register": false,
+  "ysf_mode": "DN",
+  "ysf_wiresx_room": 0,
+  "ysf_wiresx_auto": false
+ }
+}

@@ -1,0 +1,57 @@
+:root { --bg: #f6f7f9; --panel: #fff; --fg: #1d2330; --muted: #69707d; --line: #d8dce3; --acc: #1f6feb; --acc-fg: #fff;
+  --sel: #dbe8ff; --err: #c62828; --warn: #a66300; --row: #fafbfc; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #15181e; --panel: #1d2129; --fg: #e3e6eb; --muted: #9aa1ad; --line: #333a46; --acc: #4b8df8; --acc-fg: #fff;
+    --sel: #23395e; --err: #ff6b6b; --warn: #f0b44c; --row: #20252e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.35 system-ui, sans-serif; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; height: 100vh; }
+header, .radio { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.brand { margin-right: 6px; }
+.files { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.muted { color: var(--muted); }
+button, .btn, select, input, textarea { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 3px 8px; }
+button, .btn { cursor: pointer; }
+button:hover, .btn:hover { border-color: var(--acc); }
+button.primary { background: var(--acc); color: var(--acc-fg); border-color: var(--acc); }
+button:disabled { opacity: .5; cursor: default; }
+.body { flex: 1; min-height: 0; display: flex; }
+#nav { width: 250px; flex: none; overflow: auto; background: var(--panel); border-right: 1px solid var(--line); padding: 6px 0; font-size: 13px; }
+#nav details > summary { cursor: pointer; padding: 2px 8px; font-weight: 600; }
+#nav button { display: block; width: 100%; text-align: left; border: 0; border-radius: 0; padding: 2px 8px 2px 22px; background: none; }
+#nav button.on { background: var(--acc); color: var(--acc-fg); }
+#nav button.stock::after { content: " *"; color: var(--warn); }
+main { flex: 1; min-width: 0; min-height: 0; background: var(--panel); }
+.note { color: var(--warn); margin: 0 0 6px; }
+.subtabs { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 6px; }
+.subtabs button.on { background: var(--acc); color: var(--acc-fg); }
+.tab { display: none; height: 100%; padding: 8px 12px; overflow: auto; }
+.tab.on { display: block; }
+.split { display: flex; gap: 12px; height: 100%; }
+.left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+.tablewrap { flex: 1; overflow: auto; border: 1px solid var(--line); border-radius: 5px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 2px 8px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+tbody tr:nth-child(even) { background: var(--row); }
+tbody tr { cursor: pointer; scroll-margin-top: 30px; }
+tbody tr.sel { background: var(--sel) !important; }
+.editor { width: 330px; flex: none; overflow: auto; border-left: 1px solid var(--line); padding-left: 12px; }
+.editor fieldset { border: 1px solid var(--line); border-radius: 6px; margin: 0 0 8px; }
+.row { display: grid; grid-template-columns: 140px 1fr; gap: 6px; align-items: center; margin: 3px 0; }
+.row input[type=text], .row select { width: 100%; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px 18px; }
+.msg { color: var(--err); min-height: 1.2em; }
+.lists { display: flex; gap: 12px; height: 100%; }
+.lists > div { display: flex; flex-direction: column; min-width: 0; }
+.lists select[multiple], .lists select[size] { flex: 1; min-height: 300px; width: 100%; }
+.lists .c1 { width: 240px; } .lists .c2, .lists .c3 { flex: 1; }
+pre { margin: 0; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; }
+.err { color: var(--err); } .warn { color: var(--warn); }
+dialog { width: min(900px, 95vw); border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--fg); }
+dialog pre { max-height: 55vh; overflow: auto; border: 1px solid var(--line); padding: 6px; }
+.right { text-align: right; }
+progress { width: 140px; }
+@media (max-width: 760px) { .split { flex-direction: column; } .editor { width: auto; border-left: 0; padding: 0; } .lists { flex-direction: column; }
+  .body { flex-direction: column; } #nav { width: auto; max-height: 30vh; border-right: 0; border-bottom: 1px solid var(--line); } }

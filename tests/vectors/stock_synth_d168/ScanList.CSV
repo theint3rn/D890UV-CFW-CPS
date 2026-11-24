@@ -1,0 +1,7 @@
+"No.","Scan List Name","Scan Channel Member","Scan Mode","Priority Channel Select","Priority Channel 1","Priority Channel 2","Revert Channel","Look Back Time A[s]","Look Back Time B[s]","Dropout Delay Time[s]","Dwell Time[s]"
+"1","FM Simplex","Simplex 1|Simplex 2|Simplex 3|Simplex 4|Simplex 5|Simplex 6|Simplex 7|Simplex 8|Simplex 9|Simplex 10|Simplex 11|Simplex 12|Simplex 13|Simplex 14|Simplex 15|Simplex 16|Simplex 17|Simplex 18|Simplex 19|Simplex 20","","","","","","","","",""
+"2","FM Rpt","Rpt A1|Rpt A2|Rpt A3|Rpt A4|Rpt A5|Rpt A6|Rpt A7|Rpt A8|Rpt A9|Rpt A10|Rpt A11|Rpt A12|Rpt A13|Rpt A14|Rpt A15|Rpt A16|Rpt A17|Rpt A18|Rpt A19|Rpt A20","","","","","","","","",""
+"3","Site Alpha","ALP Local|ALP Region|ALP World|ALP Test TG 3100|ALP Talk 1|ALP Talk 2|ALP Parrot|ALP Net A|ALP Net B|ALP Net C","","","","","","","","",""
+"4","Site Bravo","BRA Local|BRA Region|BRA World|BRA Test TG 3100|BRA Talk 1|BRA Talk 2|BRA Parrot|BRA Net A|BRA Net B|BRA Net C","","","","","","","","",""
+"5","Site Charlie","CHA Local|CHA Region|CHA World|CHA Test TG 3100|CHA Talk 1|CHA Talk 2|CHA Parrot|CHA Net A|CHA Net B|CHA Net C","","","","","","","","",""
+"6","Site Delta","DEL Local|DEL Region|DEL World|DEL Test TG 3100|DEL Talk 1|DEL Talk 2|DEL Parrot|DEL Net A|DEL Net B|DEL Net C","","","","","","","","",""

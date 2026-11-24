@@ -1,0 +1,7 @@
+[
+ {
+  "level": "warn",
+  "where": "ch 8 NXDN",
+  "msg": "has a trunk system but the trunk flag is off (firmware sets it)"
+ }
+]

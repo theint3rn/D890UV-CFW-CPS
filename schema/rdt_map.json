@@ -1,0 +1,996 @@
+{
+"Channel": {
+"2TONE Decode": [
+200
+],
+"2Tone ID": [
+200
+],
+"5Tone ID": [
+200
+],
+"AES Digital Encryption": [
+200
+],
+"APRS RX": [
+200
+],
+"APRS Report Type": [
+200
+],
+"ARC4": [
+200,
+322
+],
+"Ana APRS Mute": [
+200,
+318
+],
+"AnaAprsTxPath": [
+200,
+321
+],
+"Analog APRS PTT Mode": [
+200
+],
+"Auto Scan": [
+200,
+317
+],
+"Band Width": [
+200,
+252
+],
+"BtRxState": [
+200,
+331
+],
+"Busy Lock/TX Permit": [
+200
+],
+"CTCSS/DCS Decode": [
+200,
+257,
+258
+],
+"CTCSS/DCS Encode": [
+200,
+261,
+262
+],
+"Call Confirmation": [
+200
+],
+"Channel Type": [
+200,
+250
+],
+"Contact/Talk Group": [
+200
+],
+"Contact/Talk Group Call Type": [
+200
+],
+"Contact/Talk Group TG/DMR ID": [
+200
+],
+"Correct Frequency[Hz]": [
+200
+],
+"Custom CTCSS": [
+200,
+265,
+266
+],
+"DMR MODE": [
+200,
+299,
+309
+],
+"DTMF ID": [
+200
+],
+"DataACK Disable": [
+200,
+314
+],
+"DeRan": [
+200,
+340
+],
+"Digital APRS PTT Mode": [
+200
+],
+"Digital APRS Report Channel": [
+303
+],
+"Digital Duplex": [
+200
+],
+"Digital Encryption": [
+286
+],
+"DisturEn": [
+200,
+325
+],
+"DisturFreq": [
+200,
+326
+],
+"EnRan": [
+200,
+339
+],
+"Exclude channel from roaming": [
+200,
+308
+],
+"Idle TX": [
+200
+],
+"NxDnPttId": [
+200,
+338
+],
+"NxdnEncry": [
+200,
+341
+],
+"NxdnGroupId": [
+200,
+342
+],
+"NxdnIdNum": [
+200,
+343
+],
+"NxdnRpga": [
+200,
+335
+],
+"NxdnStateNum": [
+200,
+345
+],
+"NxdnTxBusy": [
+200,
+337
+],
+"Optional Signal": [
+272
+],
+"PTT ID": [
+200
+],
+"PTT Prohibit": [
+200
+],
+"R5ToneEot": [
+200,
+316
+],
+"R5toneBot": [
+200,
+315
+],
+"RX Color Code": [
+200,
+279
+],
+"Radio ID": [
+200
+],
+"Ranging": [
+297
+],
+"Receive Frequency": [
+200,
+241,
+242,
+243,
+245,
+246,
+247,
+248,
+249
+],
+"Receive Group List": [
+200
+],
+"Reverse": [
+254
+],
+"Rpga_Mdc": [
+200,
+324
+],
+"SMS Confirmation": [
+200
+],
+"Scan List": [
+200
+],
+"Send Talker Alias DMR/NX": [
+200,
+319
+],
+"Slot": [
+200,
+280
+],
+"Slot Suit": [
+200
+],
+"Squelch Mode": [
+200
+],
+"Talk Around(Simplex)": [
+256
+],
+"Transmit Frequency": [
+200,
+245,
+246,
+247,
+248,
+249
+],
+"Transmit Power": [
+200,
+251
+],
+"Work Alone": [
+200
+],
+"compand": [
+200,
+328
+],
+"dmr_crc_ignore": [
+200,
+327
+],
+"dup_call": [
+200,
+329
+],
+"ex_emg_kind": [
+200,
+323
+],
+"idle_tx": [
+200,
+332
+],
+"nxdnSqCon": [
+200,
+336
+],
+"nxdn_wn": [
+200,
+334
+],
+"tx_int": [
+200,
+330
+],
+"tx_talkalaes": [
+200,
+333
+],
+"txcc": [
+200,
+346
+]
+},
+"NXSetting": {
+"BeppInGroupCall": [
+23147
+],
+"DataAckWait": [
+23151
+],
+"DefaultState": [
+23168
+],
+"GroupCallBeep": [
+23163
+],
+"GroupCallLed": [
+23165
+],
+"GroupInPriCall": [
+23148
+],
+"MicEnhance": [
+23152
+],
+"NxdnMoni": [
+23173
+],
+"NxdnMoniId": [
+23175
+],
+"NxdnMoniRan": [
+23174
+],
+"NxdnRemoteAck": [
+23145
+],
+"OwnId": [
+23134
+],
+"OwnIdAbleMax": [
+23141
+],
+"OwnIdAbleMin": [
+23139
+],
+"PriCallBeep": [
+23162
+],
+"PriCallBeepDelay": [
+23160
+],
+"PriCallLed": [
+23164
+],
+"PriConfirm": [
+23155
+],
+"PriConfirmBeep": [
+23158
+],
+"PriProBeeo": [
+23159
+],
+"PttDelayTime_NOP": [],
+"ReTryTimes": [
+23149
+],
+"RemoteKillState": [
+23170
+],
+"ResetTime": [
+23153
+],
+"RespondTime_nop": [],
+"SecondCallBeep": [
+23146
+],
+"SelCallAck": [
+23161
+],
+"SelCallAckWait_nop": [],
+"SelCallBeep_nop": [],
+"SelCallLedEn_nop": [],
+"SelCallLed_nop": [],
+"ShutState": [
+23171
+],
+"SoundMode": [
+23154
+],
+"StartState": [
+23169
+],
+"StateMsg1": [
+23166
+],
+"StateMsg2": [
+23167
+],
+"StationId ": [
+23136
+],
+"StationType": [
+23138
+],
+"TxAliasEn": [
+23143
+],
+"TxBusyWait": [
+23150
+],
+"TxModuDelay": [
+23156
+],
+"TxPreTime": [
+23157
+]
+},
+"OptionalSetting": {
+"AmChanVfo": [
+1545
+],
+"AmOffset": [
+1547
+],
+"AmSqLevel": [
+1548
+],
+"AnaHoldTime": [
+148
+],
+"AnaMic": [
+1530
+],
+"AnaSqOnVoice": [
+1528
+],
+"ApoKind": [
+1525
+],
+"AprsDistanceDis": [
+1462
+],
+"AprsTxFreq": [],
+"AprsUpDate": [],
+"AutoBKLightTime": [
+116
+],
+"AutoPowerOff": [
+76
+],
+"AutoRepFreq0": [
+1445,
+1446,
+1447
+],
+"AutoRepFreq1": [
+1449,
+1450,
+1451
+],
+"AutoRepFreq2": [
+1453,
+1454,
+1455
+],
+"AutoRepFreq3": [
+1457,
+1458,
+1459
+],
+"AutoRepMaxFreqV2": [
+1503,
+1504,
+1505
+],
+"AutoRepMinFreqU2": [
+1507,
+1508,
+1509
+],
+"AutoRepMinFreqV2": [
+1499,
+1500,
+1501
+],
+"AutoRepeater": [
+145
+],
+"AutoRepeaterB": [
+1444
+],
+"Beep": [
+73
+],
+"BhtHoldDelay": [
+1487
+],
+"BhtHoldTime": [
+99
+],
+"BhtMicGain": [
+186
+],
+"BhtPttHold": [
+1489
+],
+"BhtSpkGain": [
+187
+],
+"BlueToothOn": [
+181
+],
+"BookOwnId": [
+1461
+],
+"Boot_Sound": [
+135
+],
+"BsCheckTimes": [
+1471
+],
+"BsModeCheck": [
+1469
+],
+"BtNrAfter": [
+1550
+],
+"BtNrBefore": [
+1549
+],
+"CallModeDisKind": [
+180
+],
+"CallRing": [
+124
+],
+"CallSignColour": [
+1498
+],
+"ChanDisCtr": [
+1527
+],
+"ChanNameColour": [
+1476
+],
+"ChanNameColourB": [
+1517
+],
+"ChanNumDisKind": [
+188
+],
+"ContactOutSetEn": [
+141
+],
+"Contact_Compression": [],
+"CurAmChan": [
+1546
+],
+"CurRoamZone": [
+1480
+],
+"CurTalkPathHold": [
+168
+],
+"CurUhfAutoRep": [
+1492
+],
+"CurVhfAutoRep": [
+1493
+],
+"CurWxChan": [
+1544
+],
+"DSP": [
+74
+],
+"DateDisFormat": [
+1529
+],
+"DateDisKind": [
+149
+],
+"DcsSte": [
+1538
+],
+"DialGroupHold": [
+1515
+],
+"DialPrivateHold": [
+1516
+],
+"DigiEmgKind": [
+1518
+],
+"DigiMoni": [
+146
+],
+"DigiMoniCc": [
+173
+],
+"DigiMoniId": [
+174
+],
+"DigiProtocal": [
+1555
+],
+"DigiStunKillEn": [
+138
+],
+"DiviDisEn": [
+1474
+],
+"DmrRasEn": [
+1540
+],
+"Drc": [
+1539
+],
+"EarMaxVol": [
+177
+],
+"EnSoundEffect": [
+171
+],
+"Ext_Opt1": [
+191
+],
+"Ext_Opt2": [
+193
+],
+"FM_En": [
+111
+],
+"FM_VFO": [
+108
+],
+"FailAlarm": [
+113
+],
+"File_Optimization": [],
+"FixRomanStartOp": [
+1472
+],
+"FixTimeMute": [
+1482
+],
+"FmMon": [
+120
+],
+"FreqDis": [
+119
+],
+"Gps": [
+117
+],
+"GpsMode": [
+1496
+],
+"GpsReplyEn": [
+140
+],
+"GpsTextUsed": [
+178
+],
+"GroupCallS_Ext": [],
+"GroupTalkHold": [
+103
+],
+"IdleWait": [
+133
+],
+"KeyLock": [
+75
+],
+"Language": [
+78
+],
+"LastCallDis": [
+176
+],
+"LastHeardChanSet": [
+1475
+],
+"Lightness": [
+115
+],
+"MainState": [
+121
+],
+"ManDownWait": [
+147
+],
+"MaxVol": [
+137
+],
+"MeasurePeriod": [
+185
+],
+"MenuDisWorkContact": [
+189
+],
+"MenuLowPower": [
+1468
+],
+"MicInBlueTooth": [
+182
+],
+"MicLevel": [
+88
+],
+"MinVolData": [],
+"MissCallFilter": [
+134
+],
+"MonType": [
+114
+],
+"MsgOacsuSet": [
+172
+],
+"MsgRing": [
+118
+],
+"NightMode": [
+1543
+],
+"NxdnMic": [
+1556
+],
+"OutNoteTimes": [
+1484
+],
+"OutRepNote": [
+1477
+],
+"OverVoice": [
+127
+],
+"Password": [
+80
+],
+"PersonTalkHold": [
+104
+],
+"PfLongTime": [
+143
+],
+"PowerSave": [
+84
+],
+"PreWave": [
+105
+],
+"Preamble": [
+106
+],
+"PriZoneA": [
+169
+],
+"PriZoneB": [
+170
+],
+"PttSleepTime": [
+1495
+],
+"RMV1": [],
+"RMV2": [
+100
+],
+"RX_Contact_Compression": [],
+"RecordDelay": [
+179
+],
+"Record_En": [
+112
+],
+"RemoteMoniEn": [
+139
+],
+"RepCcLimit": [
+1534
+],
+"RepMode": [],
+"RepSlotPathA": [
+1535
+],
+"RepSlotPathB": [
+1536
+],
+"Reserved_DigiKillEn": [],
+"Reserved_EMG_Kind": [],
+"Reserved_Start_Char": [],
+"ResetDigiProtocal": [
+1557
+],
+"RoamEffectChanDis": [
+1481
+],
+"RxDimWait": [
+1478
+],
+"RxNr": [
+1541
+],
+"SQL1": [
+82
+],
+"SQL2": [
+83
+],
+"STE_Freq": [
+102
+],
+"STE_Type": [
+101
+],
+"SateAnaSql": [
+1553
+],
+"SateAosLimit": [
+1554
+],
+"SateLocalKind": [
+1551
+],
+"SateTxPower": [
+1552
+],
+"ScanType": [
+87
+],
+"Scan_Pri_Current": [],
+"SmsFormat": [
+1526
+],
+"SpkInBlueTooth": [
+183
+],
+"SqOnVoice": [
+132
+],
+"StartChUse": [
+1463
+],
+"StartCurChan1": [
+1466
+],
+"StartCurChan2": [
+1467
+],
+"StartDspSet": [
+79
+],
+"StartResetEn": [
+1486
+],
+"StartTestGps": [
+1485
+],
+"StartZone1": [
+1464
+],
+"StartZone2": [
+1465
+],
+"SteTime": [
+1497
+],
+"Step": [
+81
+],
+"SubMode": [
+122
+],
+"TBST": [
+123
+],
+"TOT": [
+77
+],
+"TalkOverPoint": [
+136
+],
+"TalkTips": [
+126
+],
+"TimeBsCheck": [
+1470
+],
+"TimeRoamOn": [
+1479
+],
+"TmZone": [
+125
+],
+"TotPreEn": [
+1521
+],
+"TxAgcCon": [
+1522
+],
+"TxDimWait": [
+1473
+],
+"TxNr": [
+1542
+],
+"UhfAutoRep": [
+166
+],
+"UhfAutoRep2": [
+1490
+],
+"VOX": [
+85
+],
+"VOX_Delay": [
+86
+],
+"VcallRpheader": [
+1532
+],
+"VfoScanFreq0": [
+150,
+151,
+152
+],
+"VfoScanFreq1": [
+154,
+155,
+156
+],
+"VfoScanFreq2": [
+158,
+159,
+160
+],
+"VfoScanFreq3": [
+162,
+163,
+164
+],
+"VhfAutoRep": [
+167
+],
+"VhfAutoRep2": [
+1491
+],
+"Voice_Note": [
+131
+],
+"VolNoteEn": [
+144
+],
+"VolType": [
+1558
+],
+"VoxHeadset": [
+128
+],
+"WanderEffectWait": [
+192
+],
+"WanderPerod": [
+190
+],
+"WorkCharDisColour": [
+1519
+],
+"Work_FMCH": [
+107
+],
+"Work_Zone1": [
+109
+],
+"Work_Zone2": [
+110
+],
+"WtRecordNote": [
+184
+],
+"WxAlarmSign": [
+1488
+],
+"ZoneBarsEn": [
+1531
+],
+"ZoneNameColourA": [
+1523
+],
+"ZoneNameColourB": [
+1524
+],
+"autoRepMaxFreqU2": [
+1511,
+1512,
+1513
+],
+"bkpic": [
+1520
+],
+"comVersion": [
+1483
+]
+},
+"_ref_len": {
+"Channel": 23627,
+"NXSetting": 23627,
+"OptionalSetting": 23627
+}
+}
