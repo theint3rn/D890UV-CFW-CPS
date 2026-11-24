@@ -44,8 +44,12 @@ def test_stock_survives_binary_and_json(synth):
     assert ST.to_stock(cp2) == ST.to_stock(cp)
     cp3 = C.from_dict(C.to_dict(cp))
     assert ST.to_stock(cp3) == ST.to_stock(cp)
-    radio = C.encode(cp, for_radio=True)                   # contact database left out for the radio
-    assert len(radio) < len(b) and "DMRDigitalContactList" not in C.decode(radio).stock
+    # radio: the stock contact database is not in section 10; ID / callsign / name go to section 16 (user database)
+    radio = C.encode(cp, for_radio=True)
+    assert len(radio) < len(b) and C.LAST_USERDB == {"written": 200, "dropped": 0}
+    back = C.decode(radio).stock["DMRDigitalContactList"]
+    rows = cp.stock["DMRDigitalContactList"]
+    assert [(r[1], r[2], r[3][:12]) for r in back] == sorted((r[1], r[2], r[3][:12]) for r in rows)
 
 
 def test_cfw_edits_reach_the_stock_export(synth):
@@ -71,3 +75,23 @@ def test_stock_validation():
 def test_new_codeplug_has_no_stock_overhead():
     cp = C.new_codeplug()
     assert ST.encode_stock(cp) == b""
+
+
+def test_userdb_fills_the_region_and_reads_back(synth):
+    """section 16: as many user database entries as fit (journal reserve kept), stock list order first, sorted by
+    mode / ID; NXDN IDs > 65535 and duplicates skipped; read back from a radio into the stock tables"""
+    cp = ST.from_stock(synth)
+    cp.stock["DMRDigitalContactList"] = [[str(i + 1), str(9000000 + (7919 * i) % 900000), "C%d" % i, "Name %d" % i,
+                                          "", "", "", "", "Private Call", ""] for i in range(20000)]
+    cp.stock["NXDigitalContactList"] = [["1001", "NX1", "Ann", "Bee"] + [""] * 6, ["70000", "BAD"] + [""] * 8]
+    radio = C.encode(cp, for_radio=True)
+    w, d = C.LAST_USERDB["written"], C.LAST_USERDB["dropped"]
+    assert w + d == 20001 and d > 0 and len(radio) <= C.REGION_SIZE - C.JOURNAL_RESERVE
+    assert len(radio) + C.USER_REC > C.REGION_SIZE - C.JOURNAL_RESERVE - 16          # full
+    back = C.decode(radio).stock["DMRDigitalContactList"]
+    ids = [int(r[1]) for r in back]
+    assert ids == sorted(ids) and len(ids) == w                                     # the DMR rows, sorted
+    assert "NXDigitalContactList" not in C.decode(radio).stock                     # the NX row was dropped (no room)
+    cp.stock["DMRDigitalContactList"] = cp.stock["DMRDigitalContactList"][:10]
+    nx = C.decode(C.encode(cp, for_radio=True)).stock["NXDigitalContactList"]
+    assert nx == [["1001", "NX1", "Ann Bee"] + [""] * 7]

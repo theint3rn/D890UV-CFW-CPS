@@ -32,6 +32,54 @@ def _schema_path(model=DEFAULT_MODEL):
     raise FileNotFoundError("schema/" + name)
 
 
+DIALOG_FILE = "rdt_dialogs.json"      # stock CPS dialogs that exist only in the .rdt (no CSV): extra tables, see _add_dialogs
+DIALOGS = {}                           # table -> its entry in rdt_dialogs.json (the selected model's dialogs)
+NODE_TABLE = {}                        # tree node ("@alarm", ...) -> dialog table
+
+
+def dialog_defs():
+    global _DIALOG_DEFS
+    if _DIALOG_DEFS is None:
+        _DIALOG_DEFS = json.load(open(os.path.join(os.path.dirname(_schema_path()), DIALOG_FILE)))["tables"]
+    return _DIALOG_DEFS
+
+
+_DIALOG_DEFS = None
+
+
+def _add_dialogs(s, model):
+    """add the .rdt-only dialogs of a model to its schema: tables (same table id and column numbers on both radios; a
+    column the model's dialog does not have is kept empty), value lists, labels and tree nodes"""
+    s["dialogs"] = {}
+    for name, t in dialog_defs().items():
+        if model not in t["models"]:
+            continue
+        cols = [f["name"] for f in t["fields"]]
+        dfl = [f[model]["default"] if model in f else "" for f in t["fields"]]
+        s["tables"][name] = {"kind": t["kind"], "columns": cols, "defaults": dfl, "cfw_mapped": [], "file_only": False,
+                             "default_rows": [list(r) for r in t.get("default_rows", {}).get(model, [])],
+                             "lst_index": None, "dialog": True, "node": t.get("node")}
+        s["dialogs"][name] = t
+        for f in t["fields"]:
+            s["labels"][f["name"]] = f["label"]
+            ch = f.get("choices")
+            ch = ch.get(model) if isinstance(ch, dict) else ch
+            if ch and model in f:
+                s.setdefault("choices", {})[f["name"]] = ch
+        if t.get("node") and not any(n == t["node"] for _, nodes in s["tree"] for _, n in nodes):
+            for _, nodes in s["tree"]:                        # the stock CPS shows this dialog: add its node (D890UV)
+                for i, (_, n) in enumerate(nodes):
+                    if n == t.get("node_after", {}).get(model):
+                        nodes.insert(i + 1, [t["title"], t["node"]])
+                        break
+        if t.get("after"):                                    # extra tree node after a stock node
+            for _, nodes in s["tree"]:
+                for i, (_, n) in enumerate(nodes):
+                    if n == t["after"].get(model) and [t["title"], name] not in nodes:
+                        nodes.insert(i + 1, [t["title"], name])
+                        break
+
+
 MAPPED = ["Channel", "DMRZone", "ScanList", "DMRTalkGroups", "DMRReceiveGroupCallList"]
 _SCHEMAS = {}
 
@@ -40,12 +88,11 @@ def use(model=None):
     """select the radio model whose stock schema the module-level names (SCHEMA, TABLES, ORDER, ...) describe.
     Tables and columns carry the D890UV ("canonical") names for both models; csv_name / csv_columns hold the D168 ones."""
     global MODEL, SCHEMA, TABLES, ORDER, RECORD, FILE_ONLY, LABELS, CH_COLS, CH_DEFAULT_D, CH_DEFAULT_A, TAB_ID, \
-        CHOICES, PAGES
+        CHOICES, PAGES, DIALOGS, NODE_TABLE
     model = model or DEFAULT_MODEL
     if model not in SCHEMA_FILE:
         raise ValueError("unknown radio model %r (known: %s)" % (model, ", ".join(MODELS)))
-    if model not in _SCHEMAS:
-        _SCHEMAS[model] = json.load(open(_schema_path(model)))
+    schema_of(model)
     MODEL = model
     SCHEMA = _SCHEMAS[model]
     TABLES = SCHEMA["tables"]
@@ -60,7 +107,10 @@ def use(model=None):
     CH_DEFAULT_D = dict(zip(CH_COLS, TABLES["Channel"]["defaults"]))
     CH_DEFAULT_A = dict(CH_DEFAULT_D, **{"Busy Lock/TX Permit": "Off", "Squelch Mode": "CTCSS/DCS", "Custom CTCSS": "0.0",
                                           "2TONE Decode": "1", "txcc": "1", "Contact/Talk Group Call Type": "Private Call"})
+    DIALOGS = SCHEMA["dialogs"]
+    NODE_TABLE = {d["node"]: t for t, d in DIALOGS.items() if d.get("node")}
     TAB_ID = {t: i for i, t in enumerate(ORDER)}
+    TAB_ID.update({t: d["id"] for t, d in DIALOGS.items()})
     return SCHEMA
 
 
@@ -84,6 +134,7 @@ def schema_of(model):
     """the stock schema of a model without selecting it"""
     if model not in _SCHEMAS:
         _SCHEMAS[model] = json.load(open(_schema_path(model)))
+        _add_dialogs(_SCHEMAS[model], model)
     return _SCHEMAS[model]
 
 
@@ -498,7 +549,8 @@ ROWS = 0xFF                                  # col 0xFF entry = number of rows o
 def encode_stock(cp, for_radio=False):
     """-> bytes: entries u8 table, u8 col, u16 row, u16 len, data (latin1). Record tables: only non-default cells.
     List tables: a row-count entry + every non-empty cell. Per-object extras (channel/zone/...): their .stock dict.
-    Table ids are positions in the codeplug model's stock table order."""
+    Table ids are positions in the codeplug model's stock table order; the .rdt-only dialogs have their own ids
+    (schema/rdt_dialogs.json, 64 and up, the same on both models)."""
     use(getattr(cp, "model", None))
     b = bytearray()
 
@@ -507,7 +559,7 @@ def encode_stock(cp, for_radio=False):
         b.extend(struct.pack("<BBHH", tid, col, row, len(data)))
         b.extend(data)
 
-    for t in ORDER:
+    for t in ORDER + list(DIALOGS):
         if t in MAPPED or t not in cp.stock or (for_radio and t in FILE_ONLY):
             continue
         tab, cols = TABLES[t], TABLES[t]["columns"]
@@ -561,6 +613,8 @@ def _journal_edit(cp, tid, col, row, v):
         cp.settings.encryption = n == 1
     elif tid == JT_SETTINGS and col == 7:    # cfw: SMS format (1 = M-SMS)
         cp.settings.sms_msms = n == 1
+    elif tid == JT_SETTINGS and col == 10:   # cfw: battery in the status bar (1 = percent)
+        cp.settings.batt_percent = n == 1
     elif tid == JT_SETTINGS and col < 6 and 0 <= n < len(C.KEY_FUNCS):
         keys = (list(cp.settings.keys) + ["none"] * 6)[:6]
         keys[col] = C.KEY_FUNCS[n]
@@ -595,7 +649,9 @@ def decode_stock(data, cp):
                     objs[row].stock = {}
                 objs[row].stock[TABLES[t]["columns"][col]] = v
             continue
-        t = ORDER[tid]
+        t = ORDER[tid] if tid < len(ORDER) else next((n for n, d in DIALOGS.items() if d["id"] == tid), None)
+        if t is None:                       # a table this version does not know (newer CPS)
+            continue
         tab = TABLES[t]
         if tab["kind"] == "record":
             rows = cp.stock.setdefault(t, default_rows(t))

@@ -10,7 +10,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
-from cps import stock as ST  # noqa: E402
+from cps import stock as ST, support as SU  # noqa: E402
 
 EXAMPLE = os.path.join(ROOT, "tests", "vectors", "stock_synth", "synth.LST")
 EXAMPLE_D168 = os.path.join(ROOT, "tests", "vectors", "stock_synth_d168", "synth.LST")
@@ -216,6 +216,33 @@ def bluetooth_section(d168, opt):
     return (BT_D168 % (BT_EMU, "\n".join(rows), mod)).split("\n")
 
 
+def dialogs_section(model):
+    """the dialogs of rdt_dialogs.json for this model + what is not decoded"""
+    d = json.load(open(os.path.join(ROOT, "schema", "rdt_dialogs.json")))
+    out = ["## Dialogs kept only in the .rdt", "",
+           "Measured in the stock CPS: change one field in the dialog, OK, save, diff; and the other way round, change one byte of the "
+           "file and look which dialog field moves (tools/make_rdt_dialogs.py). The cfw CPS edits them as ordinary pages and stores "
+           "them in the codeplug (section 10 tables 64+, docs/CODEPLUG.md). Offsets: A / C = header segments (cps/rdt.py LAYOUT, "
+           "A with its variable strings taken out), E = bytes before the end of the tail, H = variable header string, "
+           "list = own record list.", ""]
+    for name, t in d["tables"].items():
+        if model not in t["models"]:
+            continue
+        out += ["### %s (table %d, %s)" % (t["title"], t["id"], t["kind"]), "",
+                "| # | Field | Where | Default | Values |", "|---|---|---|---|---|"]
+        for i, f in enumerate(t["fields"]):
+            if model not in f:
+                continue
+            loc = f[model]
+            where = "list" if loc["type"] == "list" else "%s+0x%X %s" % (loc["seg"], loc["off"], loc["type"]) if loc["seg"] in "AC" else \
+                "%s %s %s" % (loc["seg"], loc["off"], loc["type"])
+            out.append("| %d | %s | %s | %s | %s |" % (i, f["label"], where, loc["default"], ", ".join("%d %s" % (k, v) for k, v in enumerate((f["choices"].get(model) if isinstance(f.get("choices"), dict) else f.get("choices")) or []))))
+        out.append("")
+    u = d["undecoded"]
+    out += ["Not decoded: " + "; ".join(u.get("both", []) + u.get(model, []) + u.get("both_live", [])) + ".", ""]
+    return out
+
+
 def main():
     model = sys.argv[1] if len(sys.argv) > 1 else "D890UV"
     ST.use(model)
@@ -227,16 +254,34 @@ def main():
     out = [INTRO_D168 if d168 else INTRO, MAIN_D168 if d168 else MAIN, "| Section | Node | Stock table (CSV) | Rows (test codeplug) | cfw |", "|---|---|---|---|---|"]
     cfw = {"Channel": "channels", "DMRZone": "zones", "ScanList": "scan lists", "DMRTalkGroups": "contacts",
            "DMRReceiveGroupCallList": "TG lists", "@masterid": "Radio Settings"}
+    def status(t):                                     # from schema/cfw_support.json (tools/make_cfw_support.py)
+        if t in cfw:
+            return cfw[t]
+        st = SU.node_state(model, t, ST.TABLES, ST.PAGES)
+        tab = SU.table_of(t, ST.TABLES)
+        if tab and (t in ST.PAGES or ST.TABLES[tab]["kind"] == "record"):
+            keys = ST.PAGES[t]["keys"] if t in ST.PAGES else ST.TABLES[tab]["columns"]
+            vis, stored, star = SU.page_marks(model, t, keys, tab)
+            if star:
+                return "partly used by cfw (%d of %d keys stored, not used yet)" % (len(star), len(vis))
+        return "used by cfw" if st == "used" else "stored, not used by cfw yet"
+    na = []
     for sec, nodes in ST.SCHEMA["tree"]:
         for label, t in nodes:
+            if SU.section(t, model) == "n/a":
+                na.append(label)
+                continue
             if "#" in t:                                # cfw page of one record's keys (schema "pages")
                 pg = ST.SCHEMA["pages"][t]
-                out.append("| %s | %s | %s (%d keys) | | cfw page, stored, not used by cfw yet |"
-                           % (sec, label + " (cfw)", ST.csv_name(pg["table"]), len(pg["keys"])))
+                out.append("| %s | %s | %s (%d keys) | | cfw page, %s |"
+                           % (sec, label + " (cfw)", ST.csv_name(pg["table"]), len(pg["keys"]), status(t)))
                 continue
             n = len(ex.get(t, [])) if not t.startswith("@") else ""
             out.append("| %s | %s | %s | %s | %s |" % (sec, label, ST.csv_name(t) if not t.startswith("@") else "(dialog, .rdt only)", n,
-                                                     cfw.get(t, "stored, not used by cfw yet")))
+                                                     status(t)))
+    others = [e["label"] for n, e in SU.data()["sections"].items() if e.get(model) == "n/a"]
+    out += ["", "cfw column: schema/cfw_support.json (tools/make_cfw_support.py). Hidden on this radio (n/a): %s."
+            % (", ".join(sorted(set(na + others))) or "none")]
     out += ["", ("cfw adds: Tier III Systems (Digital) and a *cfw Digital Modes* section " if d168 else
                  "cfw adds: Tier III Systems (DMR), Type-C/Type-D Systems (NXDN), and a *cfw Digital Modes* section ")
             + "(Radio Settings, Trunk Systems with P25 band plans, Encryption Keys, D-STAR Repeaters, D-STAR / YSF / "
@@ -268,6 +313,7 @@ def main():
         out += ["Key Function tab (not in CSV, .rdt only): Key Lock, PF1/PF2/PF3/P1/P2 Short Key, PF1/PF2/PF3/P1/P2 Long Key, "
                 "Long Key Time, Knob Lock, Keyboard Lock, Side Key Lock, Forced Lock Key (screenshot opt_05).", ""]
     out += bluetooth_section(d168, opt)
+    out += dialogs_section(model)
     # all tables
     out += ["## Tables (stock CSV columns, in order)", ""]
     for t in ST.ORDER:
@@ -282,7 +328,8 @@ def main():
             if len(vals) > 4:
                 top += " (+%d more)" % (len(vals) - 4)
             d = tab["defaults"][i] if i < len(tab["defaults"]) else ""
-            mapped = "cfw field" if c in tab["cfw_mapped"] else ""
+            mapped = "cfw field" if c in tab["cfw_mapped"] else \
+                {"used": "used by cfw", "stored": "stored", "n/a": "n/a"}[SU.key(t, c, model)] if t == "Channel" else ""
             r = rmap.get(t, {}).get(c)
             extra = "" if r is None else (" .rdt " + ", ".join("0x%X" % x for x in r) if r else " .rdt no change")
             out.append("| %d | %s | %s | %s | %s%s |" % (i, c.replace("|", "/"), d.replace("|", "/")[:30], top.replace("|", "/")[:90], mapped, extra))

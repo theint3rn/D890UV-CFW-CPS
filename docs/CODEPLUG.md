@@ -57,10 +57,11 @@ The firmware accepts the codeplug only if all of these hold: the magic matches, 
 | 9 | pool16 (u16: zone / scan list / TG list members) | 2 | through lists |
 | 10 | stock CPS data (byte stream, see below) + radio edits journal | 1 (count = bytes) | Optional Settings in the radio's Settings menu, quick texts; the journal is written by the radio |
 | 11 | channel digital extensions (CHEXT), only channels that differ from the defaults, in channel order | 32 | talkaround; rest via `cfwcp_chext()` |
-| 12 | encryption keys (user-entered) | 56 | `cfwcp_key()` accessor |
+| 12 | encryption keys (user-entered) | 56 | `cfwcp_key()` accessor (then the keys of the stock key tables, see below) |
 | 13 | band plans (P25 IDEN_UP / NXDN channel plan) of trunk systems | 24 | `cfwcp_bandplans()` accessor |
 | 14 | D-STAR repeater / routing list | 48 | stored |
 | 15 | digital settings (D-PRS, YSF, registration) | 64 | stored |
+| 16 | user database (DMR / NX Digital Contact List), written to radios only | 24 | yes: caller callsign + name on RX (`stockcp.c`) |
 
 Sections are written in id order. The firmware ignores ids it does not know, so new sections can be added without a version bump. A layout change to an existing record does need a version bump.
 
@@ -72,13 +73,13 @@ Sections are written in id order. The firmware ignores ids it does not know, so 
 | 8 | u32 | DMR / radio ID (also the default P25 / NXDN unit ID) |
 | 12 | u32 | P25 unit ID (0 = DMR ID) |
 | 16 | u16 | NXDN unit ID (0 = DMR ID) |
-| 18 | u16 | flags: b0 RX polarity inverted, b1 key beep, b2 auto key lock, b3 boot in VFO, b4 encryption on (privacy keys used; off by default, refused on amateur bands), b5 SMS TX format M-SMS (else cfw format) |
+| 18 | u16 | flags: b0 RX polarity inverted, b1 key beep, b2 auto key lock, b3 boot in VFO, b4 encryption on (privacy keys used; off by default, refused on amateur bands), b5 SMS TX format M-SMS (else cfw format), b6 battery shown as percent (else icon) |
 | 20 | u32 | VFO step, Hz |
 | 24 | u16 | de-emphasis compensation, µs (0 or 750) |
 | 26 | u16 | test tone, Hz (0 = off) |
 | 28 | u8 ×4 | backlight level 0..10, backlight timeout (s), VFO mode, key lock timeout (s) |
 | 32 | u16 | start channel (index, `0xFFFF` = keep the last used one) |
-| 34 | u8[6] | key functions for P1, P2, PF1, PF2, PF3, PF3-long (D168UV: PF1 = P1, PF2 = P2): 0 none, 1 next mode, 2 mode picker, 3 VFO/MEM, 4 key lock, 5 monitor, 6 scan, 7 test tone, 8 next zone, 9 talkaround, 10 TX power, 11 call log, 12 GPS info |
+| 34 | u8[6] | key functions for P1, P2, PF1, PF2, PF3, PF3-long (D168UV: PF1 = P1, PF2 = P2): 0 none, 1 next mode, 2 mode picker, 3 VFO/MEM, 4 key lock, 5 monitor, 6 scan, 7 test tone, 8 next zone, 9 talkaround, 10 TX power, 11 call log, 12 GPS info, 13 alarm (emergency) |
 | 40 | u8, u8, u16 | defaults: DMR CC, DMR slot, pad |
 | 44 | u32 | default DMR TG |
 | 48 | u16, u8, u8 | default P25 NAC, NXDN RAN, YSF DG-ID |
@@ -177,7 +178,7 @@ writes settings changed in its radio menu there, so the CPS can read them back:
 * `0xEE` marks the start; the firmware rewrites everything from the marker on (only the flash page(s) holding it).
 * Edits use the normal entry format. Tables: 21 = stock OptionalSetting (value text as in the stock CSV; the last entry
   of a cell wins, as for every entry), `0xE0` = cfw settings record (col 0..5 = key slot P1, P2, PF1, PF2, PF3, PF3 long,
-  value = key function number; col 6 = encryption 0/1 -> flags b4; col 7 = SMS format 0 cfw / 1 M-SMS -> flags b5),
+  value = key function number; col 6 = encryption 0/1 -> flags b4; col 7 = SMS format 0 cfw / 1 M-SMS -> flags b5; col 10 = battery display 0 icon / 1 percent -> flags b6),
   `0xE2` = cfw channel field (col 0 = TX power 0..3, row = channel index).
 * `0xEF`, length 4: four bytes chosen so that the CRC-32 of the whole blob still equals the CRC in the header (the
   header page is never rewritten). Readers skip `0xE0..0xEF` entries they do not apply.
@@ -202,7 +203,103 @@ Everything of the stock D890UV CPS V1.05 that cfw does not model, as the stock C
   values that differ from the stock default; list tables store a row count (column 0xFF) and every non-empty cell.
 * table 0xF0..0xF4 = per-object stock columns of channels, zones, scan lists, contacts, TG lists (row = object index):
   the stock columns cfw does not model, only where they differ from what the CPS would generate.
-* The stock digital contact databases (DMR / NX Digital Contact List) are kept in files but never written to the radio.
+* Analog signalling (firmware `cfw/app/sig.c`): tables AnalogAddressBook (4), 5ToneEncode (9), 2ToneEncode (10),
+  DTMFEncode (11), AlertTone (22), D890UV MDC1200AddressBook (35) / MDC1200Encode (36), D168UV QDC1200EnCodeTable
+  (23) / QDC1200DECodeTable (24) / QDC1200AddressBook (25), and the channel columns Optional Signal, DTMF ID, 2Tone ID,
+  5Tone ID, PTT ID, 2TONE Decode, R5toneBot / R5ToneEot, Rpga_Mdc (table 0xF0) are read by the radio. Entry numbers
+  are decimal, MDC / QDC unit ids hex (4 digits), option texts matched by keyword (cfw/README.md).
+* The stock digital contact databases (DMR / NX Digital Contact List) are kept in files; a radio gets them as section
+  16 instead (below), not as CSV text.
+
+### User database (section 16, 24 B)
+
+`u32 key = mode << 24 | id` (mode 1 DMR, 5 NXDN; DMR IDs 24 bit, NXDN 16 bit), `char[8] callsign`, `char[12] name`
+(DMR "Name"; NXDN FIRST_NAME + " " + LAST_NAME), sorted by key (the firmware does a binary search). Written only when
+encoding for a radio (`encode(for_radio=True)`): from the stock DMR / NX Digital Contact Lists, first row of an ID wins,
+as many rows as fit in the region after everything else and a 24 KB reserve for the radio edits journal (384 KB region:
+about 12 000 entries next to a typical codeplug); when they do not all fit, the rows earlier in the stock list stay
+and the CPS log says how many were left out (`codeplug.LAST_USERDB`). Reading a radio turns section 16 back into the
+stock contact lists (ID, callsign, name only) when the codeplug has none.
+
+### Stock sections used by the firmware (`cfw/app/stockcp.c`)
+
+The firmware reads these stock CPS tables from section 10 (table / column numbers of the radio's own stock model,
+`stockcp_map()`); `schema/cfw_support.json` marks them "used".
+
+| Stock data | Radios | Firmware use |
+|---|---|---|
+| Radio ID List + channel "Radio ID" (name) | both | DMR source ID of that channel (else the master ID) |
+| Encryption Code (basic privacy: 32 rows, 16-bit key, ID) | both: D890UV table 37 (decimal key); D168UV table 72 `EncryptionCodeRdt` (list of set rows: No. 1-32, hex key, ID; a row that is not listed = the default key / ID 65535, taken from the D890UV dialog) | keys of kind 0 (2 bytes, big endian); key ID = Encryption ID if <= 255, else the row number; rows with key 65535 that no channel uses are left out |
+| ARC4 Encryption Code (id, 10 hex digits) | both | kind 1 (40 bit), key ID = id |
+| AES Encryption Code (id, num, 32 or 64 hex digits) | both | kind 2 (AES-128) / 3 (AES-256), key ID = id |
+| channel "ARC4" N / "Digital Encryption" N / "AES Digital Encryption" | both | the channel's key when section 11 sets none: ARC4 N = ARC4 key id N; else Digital Encryption N with Enhanced = AES key id N, Normal = Encryption Code row N |
+| NX Encryption Code (Valid, EMGCode, KeyId) + channel "NxdnEncry" N | D890UV | valid rows = kind 7 NXDN scrambler, EMGCode = the 15-bit code; NxdnEncry N = row N |
+| NX Setting | D890UV | OwnId = NXDN unit ID (the cfw settings NXDN unit ID wins); NxdnMoni on + NxdnMoniRan Any = receive every RAN. Other columns stored |
+| NX Talk Group | D890UV | group name on RX (CALLSIGN, else FIRST_NAME); TxForbid refuses TX to that group |
+| DMR / NX Digital Contact List | both / D890UV | section 16: callsign + name of the caller on the call screen |
+
+The channel-column meanings (which table "Digital Encryption" points into) come from the stock CPS labels, the
+programming guide and the radio's menu strings ("Encrypt Type": Common / ARC4 Type / AES Type); they were not checked
+against a stock radio. Settings > Encryption and the amateur-band gate apply to these keys like to section 12 keys.
+**Not interoperable with stock radios:** the stock radios encrypt inside the SCT3288 baseband (encrypted firmware), so
+their basic privacy / ARC4 / AES air formats are unknown; the cfw uses its own DMR schemes for these key sizes
+(`proto/dmr_nxdn/dmr/dmr_priv.h`: DMR_PRIV_CFW_BP / _RC4 / _AES128 / _AES256) and only talks to other cfw radios. NXDN
+scrambling (NX Encryption Code) is the NXDN standard (TS 1-D, checked against its test vectors), so it should match
+any radio that follows it; not tried against a stock radio.
+
+Stored, not used: NX Receive Group Call List (the channel column that selects it is shared with the DMR RX group list;
+the cfw receivers have no RX group filter for DMR either), NX State Message (no NXDN status calls in the cfw), the
+repeater whitelists (Talk Group / Digital Contact Whitelist: the cfw has no cross-band repeater), D168UV
+Friends List (section 10 `FriendsList`, see "Stock CPS dialogs that exist only in the `.rdt`"; the firmware does not read
+it yet).
+
+### Stock CPS dialogs that exist only in the `.rdt` (section 10 tables 64-72)
+
+Dialogs with no stock CSV table are carried as extra tables of section 10, in the same entry format (`u8 table, u8 column, u16 row, u16 len, text`,
+values as decimal / hex text). Table ids and column numbers are the same on both radios (`schema/rdt_dialogs.json`, generated by
+`tools/make_rdt_dialogs.py`; JS `DIALOGS`); a column a radio's dialog does not have is never written for it. Record tables: only cells that
+differ from the default are stored, column = position below, row 0. List tables: row-count entry (column 0xFF) + cells. So an absent table or
+cell = the default shown. All are readable with `cfwcp_stock_value(table, col, ...)`; an older CPS / firmware ignores the ids. A filled set costs
+about 1 KB in the radio codeplug (typical use: 20-200 B).
+
+| table (id) | columns (number: name, default D890UV / D168UV; `-` = not on that radio) |
+|---|---|
+| AlarmSetting (64, record) | 0 Analog Emergency Alarm (0 / 0); 1 Analog ENI Type (0 / 0); 2 Analog Alarm Time [s] (20 / 20); 3 Analog Duration of TX [s] (31 / 31); 4 Analog Duration of RX [s] (31 / 31); 5 Analog Emergency Channel (1 / 1); 6 Analog ENI Send Select (0 / 0); 7 Analog Emergency Cycle (0 = Continuous) (0 / 0); 8 Digital Emergency Alarm (0 / 0); 9 Digital Emergency Channel (1 / 1); 10 Digital Alarm Time [s] (20 / 20); 11 Digital Duration of TX [s] (31 / 31); 12 Digital Duration of RX [s] (31 / 31); 13 Digital ENI Send Select (0 / 0); 14 Digital Emergency Cycle (0 = Continuous) (0 / 0); 15 Digital TG/DMR ID (0 / 0); 16 Digital Call Type (0 / 0); 17 Receive Alarm (0 / 0); 18 QDC1200 Kind (0 / 0); 19 QDC1200 Group ID (- / 000); 20 QDC1200 Private ID (0000 / 0000); 21 Analog alarm signaling type (- / 0); 22 Work Alone Response Time (0 = 1 min) (0 / 0); 23 Work Alone Warning Time (0 = 1 s) (0 / 0); 24 Work Alone Response (0 / 0) |
+| DTMFSetting (65, record) | 0 DTMF Transmitting Time (1 / 1); 1 DTMF Self ID (3 digits; the stock CPS shows letters blank) (000 / 000); 2 DTMF Interval Character (10 A, 11 B, 12 C, 13 D, 14 *, 15 #) (14 / 14); 3 Group Code (0 Off, 10 A .. 13 D, 14 *, 15 #) (0 / 0); 4 Decoding Response (0 / 0); 5 First Digit Time (x 10 ms) (20 / 20); 6 Pretime (x 10 ms) (20 / 20); 7 Auto Reset Time (D890UV: s, D168UV: 0.1 s) (10 / 0); 8 Time-Lapse After Encode (x 10 ms) (20 / 20); 9 PTT ID Pause Time (raw) (0 / 0); 10 D Code Pause (s, 0 = Off) (10 / 10); 11 Side Tone (0 / 0); 12 PTT ID (0 / 0); 13 PTT ID Starting (BOT) ('' / ''); 14 PTT ID Ending (EOT) ('' / ''); 15 Remotely Kill ('' / ''); 16 Remotely Stun ('' / '') |
+| T2Setting (66, record) | 0 1st Tone Duration (x 0.1 s) (5 / 5); 1 2nd Tone Duration (x 0.1 s) (5 / 5); 2 Long Tone Duration (x 0.1 s) (10 / 10); 3 Gap Time (x 100 ms) (0 / 0); 4 Auto Reset Time (D890UV: s, D168UV: 0.1 s) (10 / 0); 5 Side Tone (0 / 0) |
+| T5Setting (67, record) | 0 Self ID ('' / ''); 1 Decode Standard (0 / 0); 2 Decoding Response (0 / 0); 3 Time Of Decode Tone [ms] (- / 70); 4 Decode Time (x 10 ms) (2 / 2); 5 5TONE Dec Units (bit mask, bit 0 = unit 1) (0 / 0); 6 Disp AnyID (0 / 0); 7 Pretime (x 10 ms) (20 / 20); 8 Time-Lapse After Encode (x 10 ms) (20 / 20); 9 PTT ID Pause Time [s] (0 = Off) (10 / 10); 10 Auto Reset Time [s] (10 / 0); 11 First Delay (x 10 ms) (20 / 20); 12 Side Tone (0 / 0); 13 First Delay Time After Stop (x 10 ms) (0 / 0); 14 PTT ID Starting (BOT): Encode ID ('' / ''); 15 PTT ID Starting (BOT): standard (index) (0 / 0); 16 PTT ID Starting (BOT): tone time [ms] (70 / 70); 17 PTT ID Ending (EOT): Encode ID ('' / ''); 18 PTT ID Ending (EOT): standard (index) (0 / 0); 19 PTT ID Ending (EOT): tone time [ms] (70 / 70) |
+| T5InfoCodes (68, list) | 0 No.; 1 Function Option (index); 2 Decoding Response (index); 3 Information ID |
+| TalkAlias (70, record) | 0 Talker Alias Type (- / 0); 1 Alias Display Priority (0 / 0); 2 Alias Data Format (0 / -) |
+| FriendsList (71, list) | 0 No.; 1 DMR ID |
+| EncryptionCodeRdt (72, list, D168UV) | 0 No.; 1 Encryption KEY (hex); 2 Encryption ID |
+
+Value rules: `AlarmAChannel` / `AlarmDChannel` = 1-based channel number in the channel list; `AlarmQPrivate` / `AlarmQGroup` = hex;
+FriendsList `DMR ID` = an ID of the digital contact list (the `.rdt` stores the list index); EncryptionCodeRdt key = 4 hex digits (65535 ID = none).
+Times are in the stock raw unit named in the label. D168UV `Encryption Code` is this table (the D890UV one is the CSV table EncryptionCode, id 37).
+Not decoded (kept byte for byte in the `.rdt`, not in the codeplug): Alarm Setting > Analog > Emergency ID (list content depends on the signalling tables); Alarm Setting > ENI Type list texts (the value is stored raw); 5Tone Setting: Stop Code, Stop Time (header bytes 0x23-0x25 are not tied to one field); the Function Name of an information code (the string after the ID is kept as it is); 2Tone Setting > Decode tab; DTMF Setting > Special Call; Encode ID tables (CSV); Alarm Setting > QDC1200 Group ID: the stock D890UV CPS shows the bytes at C+0x56 but saves to C+0x4F, so it does not survive its own save (the frame is greyed out there); Talk Alias > Custom Text: the V1.07 dialog shows no text field when it is chosen; where (or if) a text is kept is not known; QDC1200 Setting: Max ACK wait, Sync headers, Pretime, Try times, Side Tone; Local Information: the stock CPS opens the COM port for it; it is live radio data, not in the .rdt.
+
+### Stock common sections used by the firmware (`cfw/app/stockopt.c`)
+
+Read from section 10 like the tables above (table id = stock .LST position, same on both radios for these). Absent values act as the stock default. List tables
+are cached in one walk of section 10 at boot and after a CPS write; a list table equal to the stock default is not
+stored, so the firmware applies the stock default rows (FM-001 88.000, AM-001 108.000, the 18 default hot keys).
+
+| table (id) | columns used |
+|---|---|
+| OptionalSetting (21) | Step 8, StartDspSet 6, Start_Char 46 / Start_Char2 62, Boot_Sound 54, MsgRing 35, CallRing 41, TmZone 42, TotPreEn 161, MenuLowPower 120, StartChUse 115 / StartZone1 116 / StartCurChan1 118, AutoRepeater 65, UhfAutoRep 76 / VhfAutoRep 77, AutoRepFreq0..3 108..111, WanderPerod 99, FixRomanStartOp 124, TimeRoamOn 131, CurRoamZone 132, AmOffset 186 (D890UV); plus the v0.4/v0.5 ones (rset.c) |
+| PrefabricatedSMS (6) | Text (quick texts, hot key message) |
+| FM (7) | No. (101 = VFO), Frequency[MHz], Scan, Name (D890UV) |
+| HotKey_QuickCall (12) | Operation Type (DTMF / 2Tone / 5Tone / MDC1200 / QDC1200), Call ID (encode list entry) |
+| HotKey_HotKey (14) | Mode (Menu / Call), Menu, Call Type, Call Object (contact name / quick call), Digi Call Type, Content |
+| AutoRepeaterOffsetFrequencys (16) | Offset Frequency (MHz) |
+| RoamingChannel (17) / RoamingZone (18) | RX, TX, Color Code, Slot, Name / Name, members ("a\|b", channel names) |
+| APRS (19) | 1 auto interval, 3 fixed beacon, 4..11 position, 48/49 TOCALL + SSID, 50/51 call + SSID, 52/53 symbol, 54 path, 55 comment, 56 TX frequency |
+| GPSRoaming (20) | OnOff, Zone, latitude / longitude degree + N/S, E/W + minute, Radius(Meter) |
+| AMAir (27) / AMZone (30), D890UV | No. (257 = VFO), Frequency, Name / Zone Name, members |
+| channel extras (0xF0) | Busy Lock/TX Permit, PTT Prohibit, Reverse, Correct Frequency[Hz], Exclude channel from roaming |
+
+Radio edits of these OptionalSetting columns (Menu > Radio extras > Options) go into the radio edits journal as table 21
+entries, like the Settings page.
 
 ### Zone (24 B), TG list (24 B)
 

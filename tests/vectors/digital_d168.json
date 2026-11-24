@@ -14,6 +14,7 @@
   "boot_vfo": false,
   "encryption": false,
   "sms_msms": false,
+  "batt_percent": true,
   "step_hz": 12500,
   "deemph_us": 0,
   "test_tone_hz": 0,

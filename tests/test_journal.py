@@ -135,15 +135,15 @@ def test_new_key_functions_round_trip():
 
 
 def test_cfw_flags_from_journal():
-    """Settings > Encryption (0xE0 col 6) and SMS format (col 7) edited on the radio read back into the settings
-    flags (b4 / b5), and survive the next CPS write"""
+    """Settings > Encryption (0xE0 col 6) and SMS format (col 7), battery percent (col 10) edited on the radio read back into the settings
+    flags (b4 / b5 / b6), and survive the next CPS write"""
     for model in ("D890UV", "D168UV"):
         cp = synth(model)
-        assert not cp.settings.encryption and not cp.settings.sms_msms
-        new = firmware_journal(C.encode(cp, for_radio=True), [(0xE0, 6, 0, "1"), (0xE0, 7, 0, "1")])
+        assert not cp.settings.encryption and not cp.settings.sms_msms and not cp.settings.batt_percent
+        new = firmware_journal(C.encode(cp, for_radio=True), [(0xE0, 6, 0, "1"), (0xE0, 7, 0, "1"), (0xE0, 10, 0, "1")])
         cp2 = C.decode(new)
-        assert cp2.settings.encryption and cp2.settings.sms_msms
+        assert cp2.settings.encryption and cp2.settings.sms_msms and cp2.settings.batt_percent
         cp3 = C.decode(C.encode(cp2, for_radio=True))
-        assert cp3.settings.encryption and cp3.settings.sms_msms
+        assert cp3.settings.encryption and cp3.settings.sms_msms and cp3.settings.batt_percent
         flags = struct.unpack_from("<H", C.encode(cp2), section(C.encode(cp2), C.SEC_SETTINGS)[0] + 18)[0]
-        assert flags & 0x30 == 0x30
+        assert flags & 0x70 == 0x70

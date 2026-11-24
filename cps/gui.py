@@ -9,7 +9,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
-from . import codeplug as C, validate as V, diff as D, ops, stock as ST
+from . import codeplug as C, validate as V, diff as D, ops, stock as ST, support as SU
 
 MODE_LABEL = {"FM": "FM", "DMR": "DMR", "P25": "P25 Ph1", "P25P2": "P25 Ph2", "NXDN": "NXDN", "DSTAR": "D-STAR", "YSF": "YSF"}
 
@@ -224,23 +224,25 @@ class ListEditor(ttk.Frame):
             self.members.selection_set(k + d)
 
 
-NOT_USED = "Stock CPS data: stored in the cfw codeplug and kept in stock .rdt / CSV files, not used by cfw yet."
+NOT_USED = SU.NOTE          # cfw use per model and stock node / column: schema/cfw_support.json (cps/support.py)
 
 
 class StockGrid(ttk.Frame):
     """A stock CPS list table (verbatim rows): grid + row editor."""
 
-    def __init__(self, app, table):
+    def __init__(self, app, table, node=None):
         super().__init__(app.nb)
         self.app, self.table = app, table
         self.cols = ST.TABLES[table]["columns"]
-        ttk.Label(self, text="%s  -  %s" % (table, NOT_USED), foreground="#a05000").pack(anchor="w", padx=6, pady=2)
+        vis, stored, star = SU.page_marks(app.cp.model, node or table, self.cols, table)
+        if stored:                      # columns the firmware uses: no note; mixed table: * on the stored columns
+            ttk.Label(self, text="%s  -  %s" % (ST.DIALOGS[table]["title"] if table in ST.DIALOGS else table, SU.STAR_NOTE if star else NOT_USED), foreground="#a05000").pack(anchor="w", padx=6, pady=2)
         top = ttk.Frame(self)
         top.pack(fill="both", expand=True)
         self.tv = ttk.Treeview(top, columns=list(range(len(self.cols))), show="headings")
         for i, c in enumerate(self.cols):
-            self.tv.heading(i, text=c)
-            self.tv.column(i, width=max(60, min(220, 9 * len(c))), stretch=False)
+            self.tv.heading(i, text=ST.LABELS.get(c, c) + (" *" if c in star else ""))
+            self.tv.column(i, width=max(60, min(220, 9 * len(ST.LABELS.get(c, c)))), stretch=False)
         xs = ttk.Scrollbar(top, orient="horizontal", command=self.tv.xview)
         ys = ttk.Scrollbar(top, command=self.tv.yview)
         self.tv.configure(xscrollcommand=xs.set, yscrollcommand=ys.set)
@@ -260,7 +262,7 @@ class StockGrid(ttk.Frame):
         self.vars = []
         for i, c in enumerate(self.cols):
             r, k = divmod(i, 6)
-            ttk.Label(self.fr, text=c).grid(row=2 * r, column=k, sticky="w", padx=3)
+            ttk.Label(self.fr, text=ST.LABELS.get(c, c) + (" *" if c in star else "")).grid(row=2 * r, column=k, sticky="w", padx=3)
             v = tk.StringVar()
             ttk.Entry(self.fr, textvariable=v, width=18).grid(row=2 * r + 1, column=k, sticky="w", padx=3)
             self.vars.append(v)
@@ -319,17 +321,25 @@ class StockRecord(ttk.Frame):
     """A stock CPS settings record (Optional Settings with the stock dialog's tabs, NX Setting, APRS, Alert Tone).
     page: a schema "pages" entry (e.g. D168 Bluetooth) = one group of keys of the record with its own note."""
 
-    def __init__(self, app, table, page=None):
+    def __init__(self, app, table, page=None, node=None):
         super().__init__(app.nb)
         self.app, self.table = app, table
-        note = "%s  -  %s Values are the stock CSV values." % (table, NOT_USED)
-        if page:
-            note = page["note"] + "  " + NOT_USED + (" Lists show the radio's values." if any(
-                k in ST.CHOICES for k in page["keys"]) else " Values are the stock CSV values.")
-        ttk.Label(self, text=note, foreground="#a05000", wraplength=900).pack(anchor="w", padx=6, pady=2)
         cols = ST.TABLES[table]["columns"]
-        groups = [[page["title"], page["keys"]]] if page else ST.SCHEMA["optional_tabs"] if table == "OptionalSetting" else \
+        dlg = ST.DIALOGS.get(table)
+        node = next((n for n, p in ST.PAGES.items() if p is page), table) if page else node or table
+        vis, stored, star = SU.page_marks(app.cp.model, node, page["keys"] if page else cols, table)
+        use = "" if not stored else SU.STAR_NOTE if star else NOT_USED
+        note = "%s  -  %s Values are the stock CSV values." % (table, use) if use else "%s: values are the stock CSV values." % table
+        if dlg:
+            note = (dlg["title"] + (": " + use if use else "") + "  " + dlg.get("note", "")).strip()
+        elif page:
+            note = (page["note"] + "  " + use).strip() + (" Lists show the radio's values." if any(
+                k in ST.CHOICES for k in page["keys"]) else " Values are the stock CSV values.")
+        ttk.Label(self, text=note, foreground="#a05000" if stored else "", wraplength=900).pack(anchor="w", padx=6, pady=2)
+        groups = [[g, list(ks)] for g, ks in dlg["groups"]] if dlg and dlg.get("groups") else [[page["title"], page["keys"]]] if page else ST.SCHEMA["optional_tabs"] if table == "OptionalSetting" else \
             [["%s %d" % (table, i // 40 + 1), cols[i:i + 40]] for i in range(0, len(cols), 40)]
+        groups = [[g, [k for k in ks if k in vis]] for g, ks in groups]          # n/a keys hidden
+        groups = [g for g in groups if g[1]]
         nb = ttk.Notebook(self)
         nb.pack(fill="both", expand=True)
         self.vars = {}
@@ -338,7 +348,7 @@ class StockRecord(ttk.Frame):
             nb.add(f, text=tab)
             for i, k in enumerate(keys):
                 r, c = i % 20, i // 20
-                ttk.Label(f, text=ST.LABELS.get(k, k)).grid(row=r, column=2 * c, sticky="e", padx=(8, 2), pady=1)
+                ttk.Label(f, text=ST.LABELS.get(k, k) + (" *" if k in star else "")).grid(row=r, column=2 * c, sticky="e", padx=(8, 2), pady=1)
                 v = tk.StringVar()
                 if k in ST.CHOICES:              # radio value list; a raw value outside it is shown (and kept) as is
                     ttk.Combobox(f, textvariable=v, values=ST.CHOICES[k], width=14).grid(row=r, column=2 * c + 1, sticky="w")
@@ -371,15 +381,17 @@ class InfoPage(ttk.Frame):
                        "identify the radio with Program > Read / cfw_cps.py info.",
             "@enccode": "Encryption Code (DMR basic privacy keys): kept verbatim inside stock .rdt files (no CSV in the stock "
                         "CPS). cfw keys: cfw Digital Modes > Encryption Keys.",
-            "@friends": "Friends List: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-            "@talkalias": "Talk Alias: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-            "@alarm": "Alarm Setting: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-            "@local": "Local Information: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
+            "@friends": "Friends List: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+            "@talkalias": "Talk Alias: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+            "@alarm": "Alarm Setting: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+            "@local": "Local Information: the stock CPS reads it live from the radio over the COM port; nothing of it is in the .rdt or the codeplug.",
             "@masterid": "Master ID: see Radio Settings (DMR / radio ID, callsign)."}
 
     def __init__(self, app, key):
         super().__init__(app.nb)
-        ttk.Label(self, text=self.TEXT.get(key, key).replace("{model}", app.cp.model), wraplength=700).pack(anchor="w", padx=10, pady=10)
+        stored = key not in App.CFW_NODE and SU.section(key, app.cp.model) == "stored"
+        ttk.Label(self, text=self.TEXT.get(key, key).replace("{model}", app.cp.model) + (" Not used by cfw yet." if stored else ""),
+                  wraplength=700).pack(anchor="w", padx=10, pady=10)
 
     def refresh(self):
         pass
@@ -823,9 +835,10 @@ class App:
             return
         c = self.cp.channels[i]
         gen = ST._row("Channel", c, self.cp, {})
-        cols = [k for k in ST.CH_COLS if k not in ST.TABLES["Channel"]["cfw_mapped"]]
+        cols, stored, star = SU.channel_marks(self.cp.model, [k for k in ST.CH_COLS if k not in ST.TABLES["Channel"]["cfw_mapped"]])
         w = tk.Toplevel(self.root)
-        w.title("Channel %d: stock CPS settings (stored, not used by cfw yet)" % (i + 1))
+        w.title("Channel %d: stock CPS settings%s" % (i + 1, "" if not stored else " (%s)" % SU.STAR_NOTE if star
+                                                       else " (stored, not used by cfw yet)"))
         cv = tk.Canvas(w, width=560, height=560)
         sb = ttk.Scrollbar(w, command=cv.yview)
         fr = ttk.Frame(cv)
@@ -835,7 +848,7 @@ class App:
         sb.pack(side="right", fill="y")
         vars_ = {}
         for r, k in enumerate(cols):
-            ttk.Label(fr, text=k).grid(row=r, column=0, sticky="e", padx=4)
+            ttk.Label(fr, text=k + (" *" if k in star else "")).grid(row=r, column=0, sticky="e", padx=4)
             v = tk.StringVar(value=c.stock.get(k, gen.get(k, "")))
             ttk.Entry(fr, textvariable=v, width=28).grid(row=r, column=1, sticky="w")
             vars_[k] = v
@@ -1080,6 +1093,7 @@ class App:
                      ("boot_vfo", "Boot in VFO", "check", None), ("rx_invert", "RX polarity inverted", "check", None),
                      ("deemph_us", "De-emphasis comp us", "entry", None), ("test_tone_hz", "Test tone Hz (0 = off)", "entry", None),
                      ("backlight_level", "Backlight 0..10", "entry", None), ("backlight_timeout_s", "Backlight timeout s", "entry", None),
+                     ("batt_percent", "Battery as percent", "check", None),
                      ("key_beep", "Key beep", "check", None), ("auto_keylock", "Auto key lock", "check", None),
                      ("keylock_timeout_s", "Key lock timeout s", "entry", None),
                      ("key0", "Key P1", "combo", C.KEY_FUNCS), ("key1", "Key P2", "combo", C.KEY_FUNCS),
@@ -1184,10 +1198,13 @@ class App:
         for si, (sec, nodes) in enumerate(ST.SCHEMA["tree"]):
             sid = n.insert(root, "end", text=sec, open=si == 0)
             for label, target in nodes:
+                state = SU.node_state(self.cp.model, target, ST.TABLES, ST.PAGES)     # schema/cfw_support.json
+                if state == "n/a":
+                    continue                                    # this radio has no such feature
                 key = self.CFW_NODE.get(target)
                 if key is None:
                     key = "stock:" + target
-                iid = n.insert(sid, "end", text=label + ("" if key in self.pages or not key.startswith("stock:@") else ""))
+                iid = n.insert(sid, "end", text=label + (" *" if state == "stored" and target not in self.CFW_NODE else ""))
                 self.nav_page[iid] = key
             if sec in ("DMR", "Digital"):
                 iid = n.insert(sid, "end", text="Tier III Systems (cfw)")
@@ -1214,16 +1231,17 @@ class App:
 
     def show_page(self, key):
         if key not in self.pages and key.startswith("stock:"):
-            t = key[6:]
+            node, t = key[6:], key[6:]
+            t = ST.NODE_TABLE.get(t, t)             # an .rdt-only dialog that is decoded (schema/rdt_dialogs.json)
             if t.startswith("@"):
                 self.pages[key] = InfoPage(self, t)
             elif "#" in t:                          # a page of one record's keys (schema "pages", e.g. Bluetooth)
                 pg = ST.PAGES[t]
                 self.pages[key] = StockRecord(self, pg["table"], pg)
             elif ST.TABLES[t]["kind"] == "record":
-                self.pages[key] = StockRecord(self, t)
+                self.pages[key] = StockRecord(self, t, node=node)
             else:
-                self.pages[key] = StockGrid(self, t)
+                self.pages[key] = StockGrid(self, t, node)
         if self.cur_page in self.pages:
             self.pages[self.cur_page].pack_forget()
         self.cur_page = key

@@ -10,6 +10,11 @@ export const REGION_SIZE = 0x60000;   // max; the radio reports its own region s
 export const MODELS = { D890UV: { id: 0, region: 0x60000, ident: "D890CFW", name: "D890UV cfw" },
   D168UV: { id: 1, region: 0x60000, ident: "D168CFW", name: "D168UV cfw" } };
 export const modelOf = (cp) => (cp && cp.model) || "D890UV";
+/** web CPS default radio: ?model=... (any case), else a "d168" site path (the D168UV-CFW-CPS pages), else D890UV */
+export function modelFromUrl(search = "", pathname = "") {
+  const q = (new URLSearchParams(search).get("model") || "").toUpperCase();
+  return MODELS[q] ? q : /d168/i.test(pathname) ? "D168UV" : "D890UV";
+}
 const regionOf = (cp) => MODELS[modelOf(cp)].region;
 export const MAX_CHANNELS = 4000;
 export const MODES = ["FM", "DMR", "P25", "P25P2", "DSTAR", "NXDN", "YSF"];
@@ -25,13 +30,41 @@ export const KEY_KINDS = { DMR_BP: 2, DMR_ARC4: 5, DMR_AES128: 16, DMR_AES256: 3
   NXDN_SCR: 2, NXDN_DES: 8, NXDN_AES: 32 };
 export const KEY_ALGID = { P25_DES: 0x81, P25_AES256: 0x84, P25_ADP: 0xaa, DMR_AES256: 0x24, DMR_AES128: 0x25, DMR_ARC4: 0x21 };
 export const KEY_FUNCS = ["none", "mode_next", "mode_picker", "vfo_mem", "key_lock", "monitor", "scan", "test_tone", "zone_next",
-  "talkaround", "tx_power", "call_log", "gps_info"];
+  "talkaround", "tx_power", "call_log", "gps_info", "alarm"];
 export const CTCSS = [625, 670, 693, 719, 744, 770, 797, 825, 854, 885, 915, 948, 974, 1000, 1035, 1072, 1109, 1148, 1188, 1230,
   1273, 1318, 1365, 1413, 1462, 1514, 1567, 1598, 1622, 1655, 1679, 1713, 1738, 1773, 1799, 1835, 1862, 1899,
   1928, 1966, 1995, 2035, 2065, 2107, 2181, 2257, 2291, 2336, 2418, 2503, 2541];
 const NONE16 = 0xffff, NONE8 = 0xff;
 const REC_SIZE = { 1: 128, 2: 64, 3: 24, 4: 28, 5: 24, 6: 24, 7: 48, 8: 4, 9: 2, 11: 32, 12: 56, 13: 24, 14: 48, 15: 64 };
 const SEC_STOCK = 10;
+const SEC_USERDB = 16, USER_REC = 24, JOURNAL_RESERVE = 24 * 1024;   // cps/codeplug.py: user database section
+/** result of the last encode(cp, true): user database entries written / left out (no room) */
+export const LAST_USERDB = { written: 0, dropped: 0 };
+/** stock DMR / NX Digital Contact Lists -> [[key, callsign, name]] (cps.codeplug.user_records) */
+export function userRecords(cp) {
+  const out = [], seen = new Set();
+  const specs = [["DMRDigitalContactList", 1, "Radio ID", "Callsign", ["Name"]],
+    ["NXDigitalContactList", 5, "RADIO_ID", "CALLSIGN", ["FIRST_NAME", "LAST_NAME"]]];
+  for (const [table, mode, idc, callc, namec] of specs) {
+    const rows = (cp.stock || {})[table];
+    const TB = STOCK && STOCK.tables ? STOCK.tables() : null;
+    if (!rows || !rows.length || !TB || !TB[table]) continue;
+    const cols = TB[table].columns, ix = cols.indexOf(idc);
+    if (ix < 0) continue;
+    const g = (r, c) => { const i = cols.indexOf(c); return i >= 0 && i < r.length ? String(r[i]).trim() : ""; };
+    for (const r of rows) {
+      const v = ix < r.length ? String(r[ix]).trim() : "";
+      if (!/^[0-9]+$/.test(v)) continue;
+      const id = parseInt(v, 10);
+      if (!(id > 0 && id < 1 << 24) || (mode === 5 && id > 0xffff)) continue;
+      const key = mode * 0x1000000 + id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push([key, g(r, callc), namec.map((c) => g(r, c)).filter((x) => x).join(" ")]);
+    }
+  }
+  return out;
+}
 let STOCK = null;                 // stock.js module (registered by it: encode/decode of section 10)
 let STOCK_SCHEMA = null;
 export function registerStock(m, schema) { STOCK = m; STOCK_SCHEMA = schema || STOCK_SCHEMA; }
@@ -54,7 +87,7 @@ export const COMMON_FIELDS = ["name", "rx_hz", "tx_hz", "mode", "trunk", "scan_s
 export function settingsDefaults() {
   return {
     callsign: "N0CALL", dmr_id: 0, p25_unit_id: 0, nxdn_unit_id: 0, rx_invert: false, key_beep: true,
-    auto_keylock: false, boot_vfo: false, encryption: false, sms_msms: false, step_hz: 12500, deemph_us: 0, test_tone_hz: 0, backlight_level: 8,
+    auto_keylock: false, boot_vfo: false, encryption: false, sms_msms: false, batt_percent: false, step_hz: 12500, deemph_us: 0, test_tone_hz: 0, backlight_level: 8,
     backlight_timeout_s: 0, vfo_mode: "FM", keylock_timeout_s: 0, start_channel: null,
     keys: ["mode_next", "vfo_mem", "none", "none", "mode_next", "mode_picker"], dmr_cc: 1, dmr_slot: 1, dmr_tg: 91,
     p25_nac: 0x293, nxdn_ran: 1, ysf_dgid: 0, p25_tg: 1, nxdn_group: 1, p25_wacn: 0xbee00, p25_sysid: 0x3c1,
@@ -204,7 +237,7 @@ export function toneDecode(v) {
 function encSettings(s) {
   const w = new W();
   const flags = (s.rx_invert ? 1 : 0) | (s.key_beep ? 2 : 0) | (s.auto_keylock ? 4 : 0) | (s.boot_vfo ? 8 : 0) |
-    (s.encryption ? 16 : 0) | (s.sms_msms ? 32 : 0);
+    (s.encryption ? 16 : 0) | (s.sms_msms ? 32 : 0) | (s.batt_percent ? 64 : 0);
   w.str(s.callsign, 8).u32(s.dmr_id).u32(s.p25_unit_id).u16(s.nxdn_unit_id).u16(flags).u32(s.step_hz)
     .u16(s.deemph_us).u16(s.test_tone_hz).u8(s.backlight_level).u8(s.backlight_timeout_s)
     .u8(MODES.indexOf(s.vfo_mode)).u8(s.keylock_timeout_s).u16(ref16(s.start_channel));
@@ -310,12 +343,23 @@ export function encode(cp, forRadio = true) {
   useModel(cp);
   const stockB = STOCK ? STOCK.encodeStock(cp, forRadio) : new Uint8Array(0);
   if (stockB.length) { order.push(SEC_STOCK); recs[SEC_STOCK] = [stockB]; }
+  LAST_USERDB.written = 0; LAST_USERDB.dropped = 0;
+  let users = forRadio ? userRecords(cp) : [];
+  if (users.length) {           // fill what is left of the region (journal reserve kept), stock list order first
+    let size = HEADER_SIZE + 16 * (order.length + 1);
+    for (const sid of order) { let n = 0; for (const r of recs[sid]) n += r.length; size += n + ((4 - (n % 4)) % 4); }
+    const room = Math.max(0, Math.floor((regionOf(cp) - JOURNAL_RESERVE - size - 16) / USER_REC));
+    LAST_USERDB.written = Math.min(room, users.length); LAST_USERDB.dropped = Math.max(0, users.length - room);
+    users = users.slice(0, room).sort((a, b) => a[0] - b[0]);
+    if (users.length) { order.push(SEC_USERDB); recs[SEC_USERDB] = users.map(([k, c, n]) => new W().u32(k).str(c, 8).str(n, 12).bytes()); }
+  }
   let off = HEADER_SIZE + 16 * order.length;
   const dir = new W(), body = [];
   let blen = 0;
   for (const sid of order) {
     let n = 0; for (const r of recs[sid]) n += r.length;
     if (sid === SEC_STOCK) dir.u16(sid).u16(1).u32(n).u32(off + blen).u32(0);
+    else if (sid === SEC_USERDB) dir.u16(sid).u16(USER_REC).u32(recs[sid].length).u32(off + blen).u32(0);
     else dir.u16(sid).u16(REC_SIZE[sid]).u32(recs[sid].length).u32(off + blen).u32(0);
     for (const r of recs[sid]) body.push(r);
     const p = (4 - (n % 4)) % 4;
@@ -363,6 +407,7 @@ function decSettings(b) {
   s.rx_invert = !!(flags & 1); s.key_beep = !!(flags & 2); s.auto_keylock = !!(flags & 4); s.boot_vfo = !!(flags & 8);
   s.encryption = !!(flags & 16);
   s.sms_msms = !!(flags & 32);
+  s.batt_percent = !!(flags & 64);
   s.step_hz = v.getUint32(20, true); s.deemph_us = v.getUint16(24, true); s.test_tone_hz = v.getUint16(26, true);
   s.backlight_level = b[28]; s.backlight_timeout_s = b[29]; s.vfo_mode = MODES[b[30]] || "FM"; s.keylock_timeout_s = b[31];
   s.start_channel = unref16(v.getUint16(32, true));
@@ -476,7 +521,26 @@ export function decode(b) {
   }
   useModel(cp);
   if (secs[SEC_STOCK] && STOCK) STOCK.decodeStock(secs[SEC_STOCK][0], cp);
+  decUserdb(cp, secs[SEC_USERDB] || []);
   return cp;
+}
+
+// section 16 (codeplug read from a radio) -> the stock contact lists when the stock data has none (cps/codeplug.py)
+function decUserdb(cp, recs) {
+  const TB = STOCK && STOCK.tables ? STOCK.tables() : null;
+  if (!recs.length || !TB) return;
+  const rows = { DMRDigitalContactList: [], NXDigitalContactList: [] };
+  for (const r of recs) {
+    if (r.length !== USER_REC) continue;
+    const key = dv(r).getUint32(0, true), mode = key >>> 24, rid = key & 0xffffff, call = cstr(r, 4, 8), name = cstr(r, 12, 12);
+    const t = mode === 1 ? "DMRDigitalContactList" : mode === 5 ? "NXDigitalContactList" : null;
+    if (!t || !TB[t] || (cp.stock && cp.stock[t])) continue;
+    const row = new Array(TB[t].columns.length).fill("");
+    if (t === "DMRDigitalContactList") { row[0] = String(rows[t].length + 1); row[1] = String(rid); row[2] = call; row[3] = name; }
+    else { row[0] = String(rid); row[1] = call; row[2] = name; }
+    rows[t].push(row);
+  }
+  for (const [t, rr] of Object.entries(rows)) if (rr.length) { cp.stock = cp.stock || {}; cp.stock[t] = rr; }
 }
 
 export function load(bytesOrText, name = "") {

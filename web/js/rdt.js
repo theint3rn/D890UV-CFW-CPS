@@ -69,12 +69,20 @@ export function blankFile(model = "D890UV") {
     if (!(v >= 0 && v <= 255)) continue;
     if (seg === "E") segs.E[segs.E.length - o] = v; else segs[seg][o] = v;
   }
+  const hs = {};
+  for (const t of Object.values(ST.dialogDefs())) for (const fd of t.fields) {      // own defaults of the .rdt-only dialogs (cps/rdt.py blank_file)
+    const loc = fd[model];
+    if (!loc || !["A", "C", "H", "E"].includes(loc.seg)) continue;
+    if (loc.seg === "H") { hs[loc.off] = loc.type === "hnum" ? parseInt(loc.default, 10) : loc.default; continue; }
+    const v = fldBytes(loc, loc.default);
+    if (v && loc.seg !== "E") segs[loc.seg].set(v, loc.off);
+  }
   const tgPre = new Uint8Array(L.tgPre), userPre = new Uint8Array(L.userPre);
   for (const [k, v] of Object.entries(B.tgPre)) tgPre[k] = v;
   for (const [k, v] of Object.entries(B.userPre)) userPre[k] = v;
   const f = { version: B.version, model, A: segs.A, line1: "", password: "", B: segs.B, line2: "", C: segs.C, channels: [], ids: [],
     zones: [], scans: [], tg_pre: tgPre, tgs: [defaultContact()], user_pre: userPre, users: [], sms_pre: Uint8Array.from(B.smsPre), sms: [],
-    fm: [], rxgroups: [], tail: segs.E };
+    fm: [], rxgroups: [], tail: model === "D168UV" ? segs.E.slice(1) : segs.E, friends: [], enc: [], hs };
   if (!L.fmName) f.fm_vfo = Object.assign({}, FM_VFO);
   return f;
 }
@@ -188,13 +196,57 @@ function records(d, p, n, end = null) {
   return [out, p];
 }
 
+// header segment A holds variable strings: -> [A with them taken out, strings, position after it] (cps/rdt.py _hdr_parse)
+function hdrParse(d) {
+  const h = {}, a = new Uint8Array(0x81);
+  let p;
+  a.set(d.subarray(0, 0x1c)); a[0x1a] = 0;
+  [h.t5_self, p] = cstr(d, 0x1c, 16);
+  a.set(d.subarray(p, p + 11), 0x1d); p += 11;
+  const n = d[p++];
+  h.info = [];
+  for (let i = 0; i < n; i++) {
+    const idx = d[p], func = d[p + 1], resp = d[p + 2];
+    let id, name;
+    [id, p] = cstr(d, p + 4, 16); [name, p] = cstr(d, p, 32);
+    h.info.push({ idx, func, resp, id, name });
+  }
+  for (const key of ["bot", "eot"]) {
+    if (d[p++]) { [h["t5_" + key], p] = cstr(d, p, 16); h[`t5_${key}_std`] = d[p]; h[`t5_${key}_time`] = d[p + 1]; p += 2; }
+    else { h["t5_" + key] = ""; h[`t5_${key}_std`] = 0; h[`t5_${key}_time`] = 70; }
+  }
+  if (d[p] || d[p + 3]) throw new RdtError("header byte 0x2B / 0x2E is not zero: unknown string block in the file header");
+  a.set(d.subarray(p, p + 4), 0x2b); p += 4;
+  for (const key of ["bot", "eot", "kill", "stun"]) { if (d[p++]) [h["dtmf_" + key], p] = cstr(d, p, 16); else h["dtmf_" + key] = ""; }
+  a.set(d.subarray(p, p + 0x4e), 0x33);
+  return [a, h, p + 0x4e];
+}
+function hdrWrite(a, h) {
+  h = h || {};
+  const b = (s) => [...ST.toLatin1(s || ""), 0], out = [...a.subarray(0, 0x1c)];
+  out[0x1a] = (h.t5_self || "").length;
+  out.push(...b(h.t5_self), ...a.subarray(0x1d, 0x28));
+  const info = h.info || [];
+  out.push(info.length);
+  for (const r of info) out.push(r.idx, r.func, r.resp, r.id.length, ...b(r.id), ...b(r.name));
+  for (const key of ["bot", "eot"]) {
+    const s = h["t5_" + key] || "";
+    out.push(s.length);
+    if (s) out.push(...b(s), h[`t5_${key}_std`] ?? 0, h[`t5_${key}_time`] ?? 70);
+  }
+  out.push(...a.subarray(0x2b, 0x2f));
+  for (const key of ["bot", "eot", "kill", "stun"]) { const s = h["dtmf_" + key] || ""; out.push(s.length); if (s) out.push(...b(s)); }
+  out.push(...a.subarray(0x33, 0x81));
+  return out;
+}
+
 export function parse(d) {
   const model = fileModel(d);
   if (!model) throw new RdtError(`not a stock D890UV / D168UV CPS file (model '${lat(d, 9, 15)}')`);
   const L = LAYOUT[model];
   const f = { version: lat(d, 0, 5), model };
-  let p = 0x81;
-  f.A = d.slice(0, p);
+  let p;
+  [f.A, f.hs, p] = hdrParse(d);
   [f.line1, p] = cstr(d, p, 16);
   [f.password, p] = cstr(d, p, 8);
   f.B = d.slice(p, p + 11); p += 11;
@@ -235,7 +287,11 @@ export function parse(d) {
   f.user_pre = d.slice(p, p + L.userPre); n = d[p + 1] | (d[p + 2] << 8) | (d[p + 3] << 16);
   if (L.counted) { p += L.userPre; [f.users, p] = records(d, p, n); }
   else { const end = p + 4 + n; p += L.userPre; [f.users, p] = records(d, p, 0, end); }
-  f.sms_pre = d.slice(p, p + 3); n = d[p + 3]; p += 4; f.sms = [];
+  f.sms_pre = Uint8Array.from([d[p], 0, 0]);
+  n = u16(d, p + 1); p += 3; f.friends = [];                    // Friends List: u16 count, u24 index into the digital contact list
+  for (let i = 0; i < n; i++) f.friends.push(d[p + 3 * i] | (d[p + 3 * i + 1] << 8) | (d[p + 3 * i + 2] << 16));
+  p += 3 * n;
+  n = d[p++]; f.sms = [];
   for (let i = 0; i < n; i++) { if (d[p] !== i) throw new RdtError(`SMS ${i}`); let t; [t, p] = cstr(d, p + 1, 200); f.sms.push(t); }
   n = d[p++]; f.fm = [];
   for (let i = 0; i < n; i++) {
@@ -253,6 +309,12 @@ export function parse(d) {
     f.rxgroups.push({ name, members });
   }
   f.tail = d.slice(p);
+  f.enc = [];
+  if (model === "D168UV") {                  // Encryption Code: u8 count, {u8 row (0-based), u16 key, u16 ID}
+    n = f.tail[0];
+    for (let i = 0; i < n; i++) f.enc.push([f.tail[1 + 5 * i], [u16(f.tail, 2 + 5 * i), u16(f.tail, 4 + 5 * i)]]);
+    f.tail = f.tail.slice(1 + 5 * n);
+  }
   return f;
 }
 
@@ -267,7 +329,7 @@ const wrecords = (recs) => recs.flatMap((r) => (sameRecord(r) ? Array.from(r.raw
 
 export function serialise(f) {
   const L = LAYOUT[f.model || "D890UV"];
-  const b = [...f.A, ...wcstr(f.line1, 16), ...wcstr(f.password, 8), ...f.B, ...wcstr(f.line2, 16), ...f.C, ...le(f.channels.length, 2)];
+  const b = [...hdrWrite(f.A, f.hs), ...wcstr(f.line1, 16), ...wcstr(f.password, 8), ...f.B, ...wcstr(f.line2, 16), ...f.C, ...le(f.channels.length, 2)];
   for (const c of f.channels) b.push(...c.fixed, ...wcstr(c.name, 16), ...c.tail);
   b.push(f.ids.length);
   for (const r of f.ids) b.push(r.idx, ...le(r.id, 3), ...wcstr(r.name, 16));
@@ -289,13 +351,21 @@ export function serialise(f) {
   for (let i = 0; i < ur.length; i++) b.push(ur[i]);
   const sp = Array.from(f.sms_pre);
   if (sp[0] === 0 || sp[0] === 1) sp[0] = f.users.length ? 0 : 1;        // 1 = empty user database (cps/rdt.py)
-  b.push(...sp, f.sms.length);
+  const fr = f.friends || [];
+  sp[1] = fr.length & 0xff; sp[2] = fr.length >> 8;
+  b.push(...sp);
+  for (const i of fr) b.push(...le(i, 3));
+  b.push(f.sms.length);
   f.sms.forEach((t, i) => b.push(i, ...wcstr(t, 200)));
   const fm = f.fm.concat(f.fm_vfo ? [f.fm_vfo] : []);
   b.push(fm.length);
   for (const r of fm) b.push(r.idx, r.flag, ...le(r.freq, 2), ...(L.fmName ? wcstr(r.name, 16) : []));
   b.push(f.rxgroups.length);
   f.rxgroups.forEach((g, i) => { b.push(i, ...wcstr(g.name, 16), g.members.length); for (const m of g.members) b.push(...le(m, 2)); });
+  if (f.model === "D168UV") {
+    b.push((f.enc || []).length);
+    for (const [row, [key, ident]] of f.enc || []) b.push(row, ...le(key, 2), ...le(ident, 2));
+  }
   const out = new Uint8Array(b.length + f.tail.length);
   out.set(b); out.set(f.tail, b.length);
   new DataView(out.buffer).setUint32(5, out.length - 14, true);   // header: file length - 14 (stock CPS checks it)
@@ -350,6 +420,77 @@ function toneBytes(text) {
   return C.CTCSS.includes(v) ? [1, C.CTCSS.indexOf(v), null] : null;
 }
 
+// ------------------------------------------------------------ .rdt-only dialogs (cps/rdt.py, schema/rdt_dialogs.json)
+function ePos(f, dist) {
+  const loc = f.model === "D890UV" ? nxFind(f.tail) : null;
+  return f.tail.length - dist - (loc ? loc[1] : 0);
+}
+function fldGet(f, loc) {
+  const { type, seg, off } = loc;
+  if (seg === "H") return String((f.hs || {})[off] ?? loc.default);
+  const b = seg === "E" ? f.tail : f[seg], p = seg === "E" ? ePos(f, off) : off;
+  if (p < 0 || p >= b.length) return loc.default;
+  if (type === "u8") return String(b[p]);
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n, "0");
+  if (["u16", "chan", "hex3", "hex4"].includes(type)) { const v = b[p] | (b[p + 1] << 8); return type === "chan" ? String(v + 1) : type === "hex3" ? hx(v, 3) : type === "hex4" ? hx(v, 4) : String(v); }
+  if (type === "u32") return String((b[p] | (b[p + 1] << 8) | (b[p + 2] << 16) | (b[p + 3] << 24)) >>> 0);
+  if (type === "str3") return latin1z(b.subarray(p, p + 3));
+  throw new RdtError(`dialog field type ${type}`);
+}
+const latin1z = (b) => { let s = ""; for (const x of b) { if (!x) break; s += String.fromCharCode(x); } return s; };
+function fldBytes(loc, text) {
+  const t = String(text ?? "").trim(), typ = loc.type;
+  if (typ === "str3") { const x = ST.toLatin1(t).slice(0, 3); return Uint8Array.from([0, 1, 2], (i) => x[i] || 0); }
+  let v;
+  if (typ === "hex3" || typ === "hex4") v = /^[0-9a-f]+$/i.test(t) ? parseInt(t, 16) : NaN;
+  else { v = /^-?\d+$/.test(t) ? parseInt(t, 10) : NaN; if (typ === "chan") v -= 1; }
+  if (Number.isNaN(v)) return null;
+  if (typ === "u8") return v >= 0 && v <= 255 ? Uint8Array.from([v]) : null;
+  if (typ === "u32") return v >= 0 && v < 2 ** 32 ? Uint8Array.from(le(v >>> 0, 4)) : null;
+  return v >= 0 && v < 65536 ? Uint8Array.from(le(v, 2)) : null;
+}
+export function dialogRows(f) {
+  const out = {}, hs = f.hs || {};
+  for (const [name, t] of Object.entries(ST.DIALOGS)) {
+    if (t.kind === "record") out[name] = [t.fields.map((fd) => (fd[f.model] ? fldGet(f, fd[f.model]) : ""))];
+  }
+  if (ST.DIALOGS.T5InfoCodes) out.T5InfoCodes = (hs.info || []).map((r) => [String(r.idx), String(r.func), String(r.resp), r.id]);
+  if (ST.DIALOGS.FriendsList) out.FriendsList = (f.friends || []).filter((k) => k < f.users.length).map((k, i) => [String(i + 1), String(f.users[k].id)]);
+  if (ST.DIALOGS.EncryptionCodeRdt) out.EncryptionCodeRdt = (f.enc || []).map(([row, [key, ident]]) => [String(row + 1), key.toString(16).toUpperCase().padStart(4, "0"), String(ident)]);
+  return out;
+}
+function dialogWrite(f, base, cp) {
+  const old = dialogRows(Object.assign({}, base, { model: f.model })), hs = JSON.parse(JSON.stringify(base.hs || {})), stock = cp.stock || {};
+  for (const [name, t] of Object.entries(ST.DIALOGS)) {
+    const rows = stock[name];
+    if (!rows || !rows.length || t.kind !== "record") continue;
+    t.fields.forEach((fd, i) => {
+      const loc = fd[f.model], val = rows[0][i];
+      if (!loc || val === undefined || val === old[name][0][i]) return;
+      if (loc.seg === "H") {
+        if (loc.type === "hnum") { const n = parseInt(val, 10); if (!Number.isNaN(n)) hs[loc.off] = n & 0xff; } else hs[loc.off] = val.slice(0, 16);
+        return;
+      }
+      const b = fldBytes(loc, val);
+      if (!b) return;
+      const seg = loc.seg === "E" ? "tail" : loc.seg, buf = Uint8Array.from(f[seg]), p = loc.seg === "E" ? ePos(f, loc.off) : loc.off;
+      if (p >= 0 && p + b.length <= buf.length) { buf.set(b, p); f[seg] = buf; }
+    });
+  }
+  if (stock.T5InfoCodes && ST.DIALOGS.T5InfoCodes) {
+    const names = new Map((hs.info || []).map((r) => [r.idx, r.name])), num = (t) => (/^\d+$/.test(t.trim()) ? parseInt(t, 10) & 255 : 0);
+    hs.info = stock.T5InfoCodes.filter((r) => r.length > 3 && /^\d+$/.test(r[0].trim()))           // the string after the ID is not decoded: kept
+      .map((r) => ({ idx: num(r[0]), func: num(r[1]), resp: num(r[2]), id: r[3].slice(0, 16), name: names.get(num(r[0])) || "" }));
+  }
+  f.hs = hs;
+  if (stock.EncryptionCodeRdt && ST.DIALOGS.EncryptionCodeRdt) {
+    f.enc = stock.EncryptionCodeRdt.filter((r) => /^\d+$/.test((r[0] || "").trim()) && /^[0-9a-f]+$/i.test((r[1] || "").trim()))
+      .map((r) => [parseInt(r[0], 10) - 1, [parseInt(r[1], 16) & 0xffff, (parseInt(r[2] || "65535", 10) || 65535) & 0xffff]])
+      .sort((a, b) => a[0] - b[0] || a[1][0] - b[1][0]);
+  }
+}
+
+const sortU = (a) => [...new Set(a)].sort((x, y) => x - y);
 export function tablesFromFile(f) {
   const model = f.model || "D890UV";
   ST.use(model);
@@ -412,6 +553,7 @@ export function tablesFromFile(f) {
     else opt[0][cols.indexOf(k)] = String(f[seg][o]);
   }
   t.OptionalSetting = opt;
+  for (const [name, rows] of Object.entries(dialogRows(f))) if (JSON.stringify(rows) !== JSON.stringify(ST.defaultRows(name))) t[name] = rows;   // dialogs at their defaults are not stored
   if (model === "D890UV") { const nx = nxRow(f.tail); if (nx) t.NXSetting = [nx]; }
   return t;
 }
@@ -551,6 +693,15 @@ export function buildFile(cp) {
     const id = parseInt(row[1] || "0", 10), o = oldU.get(`${id}\u0000${row[3]}`) || { raw: new Uint8Array(0), type: 0 };
     return { id, idx: (i + 1) & 0xffff, strs: [row[3], row[4], row[2], row[5], row[6], row[7]], type: (o.type & ~0x30) | (CALLTYPE_R[row[8]] ?? 0), raw: o.raw };
   });
+  dialogWrite(f, base, cp);
+  const idx = new Map(); f.users.forEach((r, i) => { if (!idx.has(r.id)) idx.set(r.id, i); });
+  const fr = (cp.stock || {}).FriendsList;
+  if (!fr) f.friends = sortU((base.friends || []).filter((k) => k < base.users.length && idx.has(base.users[k].id)).map((k) => idx.get(base.users[k].id)));
+  else if (ST.DIALOGS.FriendsList) {
+    const want = fr.filter((r) => /^\d+$/.test((r[1] || "").trim())).map((r) => parseInt(r[1], 10));
+    f.friends = sortU(want.filter((x) => idx.has(x)).map((x) => idx.get(x)));        // the stock CPS keeps them in list order
+    f.lostFriends = want.filter((x) => !idx.has(x));
+  }
   return f;
 }
 
@@ -572,4 +723,8 @@ export function unsavedTailEdits(cp) {
   return out;
 }
 
-export function save(cp) { return { bytes: serialise(buildFile(cp)), lost: unsavedTailEdits(cp) }; }
+export function save(cp) {
+  const f = buildFile(cp), bytes = serialise(f), lost = unsavedTailEdits(cp);
+  if (f.lostFriends && f.lostFriends.length) lost.push(`FriendsList (not in the digital contact list: ${f.lostFriends.slice(0, 8).join(", ")})`);
+  return { bytes, lost };
+}

@@ -7,10 +7,13 @@ import { zip } from "./zip.js";
 import { reportHtml } from "./report.js";
 
 import * as RDT from "./rdt.js";
+import * as SU from "./support.js";
 
 const getJson = async (u, dflt) => { const r = await fetch(u); return r.ok ? r.json() : dflt; };
+ST.setDialogs(await getJson("schema/rdt_dialogs.json", { tables: {} }));     // dialogs kept only in the .rdt
 ST.setSchema(await (await fetch("schema/stock_d168uv.json")).json());
 ST.setSchema(await (await fetch("schema/stock_d890uv.json")).json());              // selected by default
+SU.setData(await getJson("schema/cfw_support.json", { sections: {}, keys: {} }));   // what the cfw firmware uses, per model
 // .rdt templates (the user's stock CPS new files) are not shipped: "Load .rdt template" (kept in this browser)
 const savedTemplate = (m) => { try { const v = localStorage.getItem("cfwcps.rdtTemplate." + m); return v ? Uint8Array.from(atob(v), (c) => c.charCodeAt(0)) : null; } catch { return null; } };
 RDT.setDefaults(savedTemplate("D890UV"), await (await fetch("schema/rdt_map.json")).json());
@@ -41,7 +44,7 @@ const showRef = (v) => (v === null || v === undefined ? "" : String(v + 1));
 const hex = (v) => v.toString(16).toUpperCase();
 
 // Default radio: ?model=..., else the site path (the D168UV-CFW-CPS GitHub Pages site opens as a D168UV), else D890UV.
-const defaultModel = () => new URLSearchParams(location.search).get("model") || (/d168/i.test(location.pathname) ? "D168UV" : "D890UV");
+const defaultModel = () => C.modelFromUrl(location.search, location.pathname);
 const st = { cp: C.newCodeplug(defaultModel()), fname: "untitled", dirty: false, sel: null, demo: null, busy: false };
 window.cps = { st, C, ST };       // for tests / the console
 
@@ -69,7 +72,7 @@ function showTab(id, arg) {
   if (RENDER[id]) RENDER[id](arg);
 }
 function navButton(label, page, arg, stock) {
-  const b = el("button", { className: stock ? "stock" : "", dataset: { page, arg: arg || "" }, title: stock ? "stock CPS data, not used by cfw yet" : "",
+  const b = el("button", { className: stock ? "stock" : "", dataset: { page, arg: arg || "" }, title: stock ? "stock CPS data, stored, not used by cfw yet" : "",
     on: { click: () => { if (curNav) curNav.classList.remove("on"); curNav = b; b.classList.add("on"); showTab(page, arg); } } }, label);
   return b;
 }
@@ -82,8 +85,10 @@ function buildNav() {
   ST.SCHEMA.tree.forEach(([sec, nodes], si) => {
     const d = el("details", { open: si === 0 }, el("summary", {}, sec));
     for (const [label, target] of nodes) {
-      const page = CFW_NODE[target] || (target.startsWith("@") ? "info" : "stock");
-      d.append(navButton(label, page, page === "stock" || page === "info" ? target : "", page === "stock"));
+      const state = SU.nodeState(navModel, target, ST.TABLES, ST.PAGES);     // schema/cfw_support.json
+      if (state === "n/a") continue;
+      const page = CFW_NODE[target] || (target.startsWith("@") && !ST.NODE_TABLE[target] ? "info" : "stock");
+      d.append(navButton(label, page, page === "stock" || page === "info" ? target : "", state === "stored" && !CFW_NODE[target]));
     }
     if (sec === "DMR" || sec === "Digital") d.append(navButton("Tier III Systems (cfw)", "trunksys"));
     if (sec === "NXDN") d.append(navButton("Type-C / Type-D Systems (cfw)", "trunksys"));
@@ -400,20 +405,24 @@ $("#digiForm").addEventListener("submit", (e) => {
   } catch (err) { $("#digiMsg").textContent = ` invalid value: ${err.message}`; }
 });
 
-// ------------------------------------------------------------ stock CPS tables (verbatim, not used by cfw yet)
-const NOT_USED = "Stock CPS data: stored in the cfw codeplug and kept in stock .rdt / CSV files, not used by cfw yet.";
+// ------------------------------------------------------------ stock CPS tables (verbatim; cfw use per model: schema/cfw_support.json)
+const NOT_USED = SU.NOTE;
 function renderStock(table) {
   const root = $("#t-stock");
   if (!table) return;
   if (ST.PAGES[table]) return renderStockRecord(ST.PAGES[table].table, root, ST.PAGES[table]);
+  const node = table;
+  table = ST.NODE_TABLE[table] || table;          // an .rdt-only dialog (schema/rdt_dialogs.json) behind an "@..." node
   const tab = ST.TABLES[table];
-  if (tab.kind === "record") return renderStockRecord(table, root);
+  if (tab.kind === "record") return renderStockRecord(table, root, null, node);
+  const [, stored, star] = SU.pageMarks(C.modelOf(st.cp), node, tab.columns, table);
+  const head = (c) => (ST.LABELS[c] || c) + (star.includes(c) ? " *" : "");
   const rows = () => { st.cp.stock = st.cp.stock || {}; return st.cp.stock[table] || (st.cp.stock[table] = ST.defaultRows(table)); };
   let cur = null;
   const tb = el("tbody"), form = el("form", { className: "grid3", autocomplete: "off" });
   const fill = () => {
     tb.replaceChildren(...rows().slice(0, 2000).map((r, i) => el("tr", { dataset: { i }, className: i === cur ? "sel" : "" }, ...r.map((v) => el("td", {}, v)))));
-    form.replaceChildren(...tab.columns.map((c, i) => el("label", { className: "row" }, el("span", {}, c),
+    form.replaceChildren(...tab.columns.map((c, i) => el("label", { className: "row" }, el("span", {}, head(c)),
       el("input", { type: "text", name: "c" + i, value: cur !== null ? (rows()[cur][i] ?? "") : "" }))),
       el("div", {}, el("button", { type: "submit", className: "primary" }, "Apply row")));
   };
@@ -424,21 +433,26 @@ function renderStock(table) {
     tab.columns.forEach((c, i) => { const r = rows()[cur]; while (r.length <= i) r.push(""); r[i] = form.elements["c" + i].value; });
     setDirty(); fill();
   };
-  root.replaceChildren(el("p", { className: "note" }, `${table}: ${NOT_USED}`),
+  root.replaceChildren(el("p", { className: "note" }, stored ? `${(ST.DIALOGS[table] || {}).title || table}: ${star.length ? SU.STAR_NOTE : NOT_USED}` : (ST.DIALOGS[table] || {}).title || table),
     el("div", { className: "tools" },
       el("button", { on: { click: () => { const d = (tab.defaults.length ? tab.defaults : tab.columns.map(() => "")).slice();
         if (/^No\.?$/i.test(tab.columns[0])) d[0] = String(rows().length + 1); rows().push(d); cur = rows().length - 1; setDirty(); fill(); } } }, "Add row"),
       el("button", { on: { click: () => { if (cur !== null && confirm(`Delete row ${cur + 1}?`)) { rows().splice(cur, 1); cur = null; setDirty(); fill(); } } } }, "Delete row"),
       el("span", { className: "muted" }, `${rows().length} rows`)),
-    el("div", { className: "tablewrap", style: "max-height:45vh" }, el("table", {}, el("thead", {}, el("tr", {}, tab.columns.map((c) => el("th", {}, c)))), tb)), form);
+    el("div", { className: "tablewrap", style: "max-height:45vh" }, el("table", {}, el("thead", {}, el("tr", {}, tab.columns.map((c) => el("th", {}, head(c))))), tb)), form);
   fill();
 }
 
-function renderStockRecord(table, root, page) {
+function renderStockRecord(table, root, page, node0) {
   // page: a schema "pages" entry (e.g. D168 Bluetooth) = one group of the record's keys with its own note
   const tab = ST.TABLES[table];
-  const groups = page ? [[page.title, page.keys]] : table === "OptionalSetting" ? ST.SCHEMA.optional_tabs
-    : Array.from({ length: Math.ceil(tab.columns.length / 40) }, (_, i) => [`${table} ${i + 1}`, tab.columns.slice(i * 40, i * 40 + 40)]);
+  const node = page ? Object.keys(ST.PAGES).find((k) => ST.PAGES[k] === page) : node0 || table, model = C.modelOf(st.cp);
+  const dlg = ST.DIALOGS[table];
+  const allKeys = page ? page.keys : tab.columns;
+  const [vis, anyStored, star] = SU.pageMarks(model, node, allKeys, table);     // n/a keys hidden, * when mixed
+  const groups = (dlg && dlg.groups ? dlg.groups : page ? [[page.title, page.keys]] : table === "OptionalSetting" ? ST.SCHEMA.optional_tabs
+    : Array.from({ length: Math.ceil(tab.columns.length / 40) }, (_, i) => [`${table} ${i + 1}`, tab.columns.slice(i * 40, i * 40 + 40)]))
+    .map(([g, ks]) => [g, ks.filter((k) => vis.includes(k))]).filter(([, ks]) => ks.length);
   let gi = 0;
   const form = el("form", { className: "grid3", autocomplete: "off" }), sub = el("div", { className: "subtabs" });
   const field = (k, v) => {
@@ -450,7 +464,7 @@ function renderStockRecord(table, root, page) {
   const fill = () => {
     const view = ST.stockSettingsView(st.cp, table);
     sub.replaceChildren(...(page ? [] : groups.map(([g], i) => el("button", { type: "button", className: i === gi ? "on" : "", on: { click: () => { gi = i; fill(); } } }, g))));
-    form.replaceChildren(...groups[gi][1].map((k) => el("label", { className: "row" }, el("span", {}, ST.LABELS[k] || k), field(k, view[k] ?? ""))),
+    form.replaceChildren(...groups[gi][1].map((k) => el("label", { className: "row" }, el("span", {}, (ST.LABELS[k] || k) + (star.includes(k) ? " *" : "")), field(k, view[k] ?? ""))),
       el("div", {}, el("button", { type: "submit", className: "primary" }, "Apply"), " ",
         el("button", { type: "button", on: { click: () => { st.cp.stock = st.cp.stock || {}; st.cp.stock[table] = ST.defaultRows(table); setDirty(); fill(); } } }, "Defaults")));
   };
@@ -460,27 +474,30 @@ function renderStockRecord(table, root, page) {
     setDirty();
   };
   const lists = groups[gi][1].some((k) => ST.CHOICES[k]);
-  const note = page ? `${page.note} ${NOT_USED}${lists ? " Lists show the radio's values." : " Values are the stock CSV values."}`
-    : `${table}: ${NOT_USED} Values are the stock CSV values.`;
+  const use = !anyStored ? "" : star.length ? SU.STAR_NOTE : NOT_USED;
+  const note = dlg ? `${dlg.title}${use ? ": " + use : ""} ${dlg.note || ""}`
+    : page ? `${page.note} ${use}${lists ? " Lists show the radio's values." : " Values are the stock CSV values."}`
+      : `${table}: ${use} Values are the stock CSV values.`;
   root.replaceChildren(el("p", { className: "note" }, note), sub, form);
   fill();
 }
 
 const INFO = { "@device": "Device Information (stock: model, bands, version). cfw: {model}, UHF 400-480 MHz, VHF 136-174 MHz; identify the radio with Read radio.",
   "@enccode": "Encryption Code (DMR basic privacy keys): kept verbatim inside stock .rdt files (no CSV in the stock CPS). cfw keys: cfw Digital Modes > Encryption Keys.",
-  "@friends": "Friends List: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-  "@talkalias": "Talk Alias: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-  "@alarm": "Alarm Setting: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
-  "@local": "Local Information: kept verbatim inside stock .rdt files (no CSV in the stock CPS). Not used by cfw yet.",
+  "@friends": "Friends List: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+  "@talkalias": "Talk Alias: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+  "@alarm": "Alarm Setting: kept verbatim inside stock .rdt files (no CSV in the stock CPS).",
+  "@local": "Local Information: the stock CPS reads it live from the radio over the COM port; nothing of it is in the .rdt or the codeplug.",
   "@masterid": "Master ID: see Radio Settings (DMR / radio ID, callsign)." };
-const renderInfo = (k) => { $("#infoText").textContent = (INFO[k] || k).replace("{model}", C.modelOf(st.cp)); };
+const renderInfo = (k) => { $("#infoText").textContent = (INFO[k] || k).replace("{model}", C.modelOf(st.cp))
+  + (!CFW_NODE[k] && SU.section(k, C.modelOf(st.cp)) === "stored" ? " Not used by cfw yet." : ""); };
 
 function editChannelStock(i) {
   const c = st.cp.channels[i], gen = ST.row("Channel", c, st.cp);
-  const cols = ST.CH_COLS.filter((k) => !ST.TABLES.Channel.cfw_mapped.includes(k));
-  $("#stockDlgTitle").textContent = `Channel ${i + 1}: stock CPS settings (stored, not used by cfw yet)`;
+  const [cols, anyStored, star] = SU.channelMarks(C.modelOf(st.cp), ST.CH_COLS.filter((k) => !ST.TABLES.Channel.cfw_mapped.includes(k)));
+  $("#stockDlgTitle").textContent = `Channel ${i + 1}: stock CPS settings` + (!anyStored ? "" : star.length ? ` (${SU.STAR_NOTE})` : " (stored, not used by cfw yet)");
   const f = $("#stockDlgForm");
-  f.replaceChildren(...cols.map((k) => el("label", { className: "row" }, el("span", {}, k),
+  f.replaceChildren(...cols.map((k) => el("label", { className: "row" }, el("span", {}, k + (star.includes(k) ? " *" : "")),
     el("input", { type: "text", name: k, value: (c.stock || {})[k] ?? gen[k] ?? "" }))));
   const d = $("#stockDlg");
   $("#stockDlgCancel").onclick = (e) => { e.preventDefault(); d.close(); };
@@ -504,7 +521,7 @@ const SET = [["callsign", "Callsign"], ["dmr_id", "DMR / radio ID", "int"], ["p2
   ["nxdn_unit_id", "NXDN unit ID (0 = DMR ID)", "int"], ["radio_name", "Radio name"], ["step_hz", "VFO step Hz", "int"],
   ["vfo_mode", "VFO mode", "sel", C.MODES], ["start_channel", "Start channel # (empty = last)", "ref"], ["boot_vfo", "Boot in VFO", "check"],
   ["rx_invert", "RX polarity inverted", "check"], ["deemph_us", "De-emphasis comp us", "int"], ["test_tone_hz", "Test tone Hz (0 = off)", "int"],
-  ["backlight_level", "Backlight 0..10", "int"], ["backlight_timeout_s", "Backlight timeout s", "int"], ["key_beep", "Key beep", "check"],
+  ["backlight_level", "Backlight 0..10", "int"], ["backlight_timeout_s", "Backlight timeout s", "int"], ["batt_percent", "Battery as percent", "check"], ["key_beep", "Key beep", "check"],
   ["auto_keylock", "Auto key lock", "check"], ["keylock_timeout_s", "Key lock timeout s", "int"],
   ...["P1", "P2", "PF1", "PF2", "PF3", "PF3 long"].map((k, i) => [`key${i}`, `Key ${k}`, "sel", C.KEY_FUNCS]),
   ["dmr_cc", "Default DMR CC", "int"], ["dmr_slot", "Default DMR slot", "int"], ["dmr_tg", "Default DMR TG", "int"],

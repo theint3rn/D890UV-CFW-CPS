@@ -34,13 +34,19 @@ KEY_KINDS = {"DMR_BP": 2, "DMR_ARC4": 5, "DMR_AES128": 16, "DMR_AES256": 32, "P2
              "NXDN_SCR": 2, "NXDN_DES": 8, "NXDN_AES": 32}          # kind -> key length in bytes
 KEY_ALGID = {"P25_DES": 0x81, "P25_AES256": 0x84, "P25_ADP": 0xAA, "DMR_AES256": 0x24, "DMR_AES128": 0x25, "DMR_ARC4": 0x21}
 KEY_FUNCS = ["none", "mode_next", "mode_picker", "vfo_mem", "key_lock", "monitor", "scan", "test_tone", "zone_next",
-             "talkaround", "tx_power", "call_log", "gps_info"]
+             "talkaround", "tx_power", "call_log", "gps_info", "alarm"]
 NONE16 = 0xFFFF
 NONE8 = 0xFF
 
 SEC_SETTINGS, SEC_CHANNELS, SEC_ZONES, SEC_SCANLISTS, SEC_CONTACTS, SEC_TGLISTS, SEC_TRUNKSYS, SEC_POOL32, SEC_POOL16 = range(1, 10)
 SEC_STOCK = 10          # stock CPS data, byte stream (cps/stock.py encode_stock); rec_size 1, count = bytes
 SEC_CHEXT, SEC_KEYS, SEC_BANDPLAN, SEC_DSTAR_RPT, SEC_DIGISET = range(11, 16)
+SEC_USERDB = 16         # user database (DMR / NX Digital Contact List) for caller names; radio writes only, see encode()
+USER_REC = 24           # u32 key = mode << 24 | id (sorted), char[8] callsign, char[12] name
+USER_MODES = {"DMR": 1, "NXDN": 5}
+JOURNAL_RESERVE = 24 * 1024   # the firmware's journal redo copy needs total_len <= region - 24 KB (CODEPLUG.md)
+# result of the last encode(for_radio=True): user database records written / left out (no room)
+LAST_USERDB = {"written": 0, "dropped": 0}
 SEC_NAMES = {1: "settings", 2: "channels", 3: "zones", 4: "scanlists", 5: "contacts", 6: "tglists", 7: "trunksys",
              8: "pool32", 9: "pool16"}
 REC_SIZE = {SEC_SETTINGS: 128, SEC_CHANNELS: 64, SEC_ZONES: 24, SEC_SCANLISTS: 28, SEC_CONTACTS: 24,
@@ -71,6 +77,7 @@ class Settings:
     boot_vfo: bool = False
     encryption: bool = False         # privacy keys in use (radio: Settings > Encryption; illegal on amateur bands)
     sms_msms: bool = False           # SMS TX format: True = M-SMS (Motorola-style TMS over IP), False = cfw format
+    batt_percent: bool = False       # status bar battery: True = percent, False = icon
     step_hz: int = 12500
     deemph_us: int = 0
     test_tone_hz: int = 0
@@ -349,7 +356,7 @@ def tone_decode(v):
 
 def _enc_settings(s):
     flags = ((1 if s.rx_invert else 0) | (2 if s.key_beep else 0) | (4 if s.auto_keylock else 0) | (8 if s.boot_vfo else 0)
-             | (16 if s.encryption else 0) | (32 if s.sms_msms else 0))
+             | (16 if s.encryption else 0) | (32 if s.sms_msms else 0) | (64 if s.batt_percent else 0))
     keys = bytes(KEY_FUNCS.index(k) if k in KEY_FUNCS else 0 for k in (list(s.keys) + ["none"] * 6)[:6])
     b = (_s(s.callsign, 8) + struct.pack("<IIHHIHHBBBBH", s.dmr_id, s.p25_unit_id, s.nxdn_unit_id, flags, s.step_hz,
                                          s.deemph_us, s.test_tone_hz, s.backlight_level, s.backlight_timeout_s,
@@ -369,6 +376,7 @@ def _dec_settings(b):
     s.rx_invert, s.key_beep, s.auto_keylock, s.boot_vfo = bool(flags & 1), bool(flags & 2), bool(flags & 4), bool(flags & 8)
     s.encryption = bool(flags & 16)
     s.sms_msms = bool(flags & 32)
+    s.batt_percent = bool(flags & 64)
     s.vfo_mode = MODES[vm] if vm < len(MODES) else "FM"
     s.start_channel = _unref16(sc)
     s.keys = [KEY_FUNCS[k] if k < len(KEY_FUNCS) else "none" for k in b[34:40]]
@@ -519,12 +527,30 @@ def encode(cp, for_radio=True):
     if stock_b:
         order.append(SEC_STOCK)
         recs[SEC_STOCK] = [stock_b]
+    LAST_USERDB.update(written=0, dropped=0)
+    users = user_records(cp) if for_radio else []
+    if users:
+        # what is left of the region after everything else and the journal reserve; the list order (stock CPS order)
+        # decides which entries stay when it does not all fit
+        size = HEADER_SIZE + 16 * (len(order) + 1)
+        for sid in order:
+            n = sum(len(r) for r in recs[sid])
+            size += n + (-n % 4)
+        region = REGION_SIZE if cp.model == "D890UV" else MODELS[cp.model]["region"]
+        room = max(0, (region - JOURNAL_RESERVE - size - 16) // USER_REC)
+        LAST_USERDB.update(written=min(room, len(users)), dropped=max(0, len(users) - room))
+        users = sorted(users[:room])
+        if users:
+            order.append(SEC_USERDB)
+            recs[SEC_USERDB] = [struct.pack("<I", k) + _s(c, 8) + _s(n, 12) for k, c, n in users]
     off = HEADER_SIZE + 16 * len(order)
     dirent, body = b"", b""
     for sid in order:
         data = b"".join(recs[sid])
         if sid == SEC_STOCK:
             dirent += struct.pack("<HHIII", sid, 1, len(data), off + len(body), 0)
+        elif sid == SEC_USERDB:
+            dirent += struct.pack("<HHIII", sid, USER_REC, len(recs[sid]), off + len(body), 0)
         else:
             dirent += struct.pack("<HHIII", sid, REC_SIZE[sid], len(recs[sid]), off + len(body), 0)
         body += data + b"\0" * (-len(data) % 4)
@@ -538,6 +564,37 @@ def encode(cp, for_radio=True):
     region = REGION_SIZE if cp.model == "D890UV" else MODELS[cp.model]["region"]
     if for_radio and total > region:
         raise CodeplugError("codeplug is %d bytes, the radio holds %d" % (total, region))
+    return out
+
+
+def user_records(cp):
+    """Stock DMR / NX Digital Contact Lists -> [(key, callsign, name)] for codeplug section 16, in list order,
+    first entry of an ID wins. key = mode << 24 | id (DMR IDs 24 bit, NXDN 16 bit)."""
+    from . import stock as ST
+    out, seen = [], set()
+    for table, mode, idc, callc, namec in (("DMRDigitalContactList", "DMR", "Radio ID", "Callsign", ("Name",)),
+                                           ("NXDigitalContactList", "NXDN", "RADIO_ID", "CALLSIGN", ("FIRST_NAME", "LAST_NAME"))):
+        rows = (getattr(cp, "stock", None) or {}).get(table)
+        if not rows or table not in ST.TABLES:
+            continue
+        cols = ST.TABLES[table]["columns"]
+        if idc not in cols:
+            continue
+        ix = cols.index(idc)
+        for r in rows:
+            v = r[ix].strip() if ix < len(r) else ""
+            if not v.isdigit():
+                continue
+            rid = int(v)
+            if not 0 < rid < (1 << 24) or (mode == "NXDN" and rid > 0xFFFF):
+                continue
+            key = USER_MODES[mode] << 24 | rid
+            if key in seen:
+                continue
+            seen.add(key)
+            g = lambda c: (r[cols.index(c)].strip() if c in cols and cols.index(c) < len(r) else "")
+            name = " ".join(x for x in (g(c) for c in namec) if x)
+            out.append((key, g(callc), name))
     return out
 
 
@@ -629,7 +686,33 @@ def decode(b):
     ST.use(cp.model)
     if secs.get(SEC_STOCK):
         ST.decode_stock(secs[SEC_STOCK][0], cp)
+    _dec_userdb(cp, secs.get(SEC_USERDB, []))
     return cp
+
+
+def _dec_userdb(cp, recs):
+    """Section 16 (a codeplug read from a radio) -> the stock contact lists, when the stock data has none (files keep
+    the full lists in section 10). Callsign / name come back as written (8 / 12 characters)."""
+    from . import stock as ST
+    rows = {"DMRDigitalContactList": [], "NXDigitalContactList": []}
+    for r in recs:
+        if len(r) != USER_REC:
+            continue
+        key = struct.unpack_from("<I", r)[0]
+        mode, rid, call, name = key >> 24, key & 0xFFFFFF, _us(r[4:12]), _us(r[12:24])
+        t = "DMRDigitalContactList" if mode == 1 else "NXDigitalContactList" if mode == 5 else None
+        if t is None or t not in ST.TABLES or t in cp.stock:
+            continue
+        cols = ST.TABLES[t]["columns"]
+        row = [""] * len(cols)
+        if t == "DMRDigitalContactList":
+            row[0], row[1], row[2], row[3] = str(len(rows[t]) + 1), str(rid), call, name
+        else:
+            row[0], row[1], row[2] = str(rid), call, name
+        rows[t].append(row)
+    for t, rr in rows.items():
+        if rr:
+            cp.stock[t] = rr
 
 
 # ---------------------------------------------------------------- JSON / YAML

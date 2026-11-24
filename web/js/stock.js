@@ -13,9 +13,38 @@ const ROWS = 0xff;
 export let MODEL = "D890UV";
 export const MODELS = ["D890UV", "D168UV"];
 const SCHEMAS = {};
+// stock CPS dialogs that exist only in the .rdt (schema/rdt_dialogs.json, cps/stock.py): call setDialogs before setSchema
+export let DIALOGS = {}, NODE_TABLE = {};
+let DIALOG_DEFS = {};
+export const dialogDefs = () => DIALOG_DEFS;
+export function setDialogs(d) { DIALOG_DEFS = (d && d.tables) || {}; }
+function addDialogs(s, model) {
+  if (s.dialogs) return;
+  s.dialogs = {};
+  for (const [name, t] of Object.entries(DIALOG_DEFS)) {
+    if (!t.models.includes(model)) continue;
+    s.tables[name] = { kind: t.kind, columns: t.fields.map((f) => f.name), defaults: t.fields.map((f) => (f[model] ? f[model].default : "")),
+      cfw_mapped: [], file_only: false, default_rows: ((t.default_rows || {})[model] || []).map((r) => r.slice()), lst_index: null, dialog: true, node: t.node || null };
+    s.dialogs[name] = t;
+    for (const f of t.fields) {
+      s.labels[f.name] = f.label;
+      const ch = f.choices && !Array.isArray(f.choices) ? f.choices[model] : f.choices;
+      if (ch && f[model]) { s.choices = s.choices || {}; s.choices[f.name] = ch; }
+    }
+    if (t.node && !s.tree.some(([, nodes]) => nodes.some(([, n]) => n === t.node))) for (const [, nodes] of s.tree) {
+      const i = nodes.findIndex(([, n]) => n === (t.node_after || {})[model]);
+      if (i >= 0) { nodes.splice(i + 1, 0, [t.title, t.node]); break; }
+    }
+    if (t.after) for (const [, nodes] of s.tree) {
+      const i = nodes.findIndex(([, n]) => n === t.after[model]);
+      if (i >= 0 && !nodes.some(([, n]) => n === name)) { nodes.splice(i + 1, 0, [t.title, name]); break; }
+    }
+  }
+}
 export const schemaOf = (m) => SCHEMAS[m];
 
 export function setSchema(s) {
+  addDialogs(s, s.model || "D890UV");
   SCHEMAS[s.model || "D890UV"] = s;
   return use(s.model || "D890UV");
 }
@@ -28,13 +57,14 @@ export function use(model = "D890UV") {
   MODEL = model;
   SCHEMA = s; TABLES = s.tables; ORDER = s.lst_order; LABELS = s.labels;
   CHOICES = s.choices || {}; PAGES = s.pages || {};
+  DIALOGS = s.dialogs; NODE_TABLE = Object.fromEntries(Object.entries(DIALOGS).filter(([, d]) => d.node).map(([t, d]) => [d.node, t]));
   RECORD = Object.keys(TABLES).filter((t) => TABLES[t].kind === "record");
   FILE_ONLY = Object.keys(TABLES).filter((t) => TABLES[t].file_only);
   CH_COLS = TABLES.Channel.columns;
   CH_DEFAULT_D = Object.fromEntries(CH_COLS.map((c, i) => [c, TABLES.Channel.defaults[i]]));
   CH_DEFAULT_A = Object.assign({}, CH_DEFAULT_D, { "Busy Lock/TX Permit": "Off", "Squelch Mode": "CTCSS/DCS", "Custom CTCSS": "0.0",
     "2TONE Decode": "1", txcc: "1", "Contact/Talk Group Call Type": "Private Call" });
-  C.registerStock({ encodeStock, decodeStock, use }, s);
+  C.registerStock({ encodeStock, decodeStock, use, tables: () => TABLES }, s);
   return s;
 }
 export const csvName = (t) => TABLES[t].csv_name || t;
@@ -355,7 +385,8 @@ export function encodeStock(cp, forRadio = false) {
     b.push(tid, col, rowi & 0xff, rowi >> 8, d.length & 0xff, d.length >> 8, ...d);
   };
   const st = cp.stock || {};
-  ORDER.forEach((t, tid) => {
+  const ids = ORDER.map((t, i) => [t, i]).concat(Object.entries(DIALOGS).map(([t, d]) => [t, d.id]));
+  ids.forEach(([t, tid]) => {
     if (MAPPED.includes(t) || !(t in st) || (forRadio && FILE_ONLY.includes(t))) return;
     const tab = TABLES[t], rows = st[t];
     if (tab.kind === "record") {
@@ -388,6 +419,8 @@ function journalEdit(cp, tid, col, rowi, v) {
     cp.settings.encryption = n === 1;
   } else if (tid === 0xe0 && col === 7) {   // cfw: SMS format (1 = M-SMS)
     cp.settings.sms_msms = n === 1;
+  } else if (tid === 0xe0 && col === 10) {  // cfw: battery in the status bar (1 = percent)
+    cp.settings.batt_percent = n === 1;
   } else if (tid === 0xe0 && col < 6 && n < C.KEY_FUNCS.length) {
     const keys = [...(cp.settings.keys || []), ...Array(6).fill("none")].slice(0, 6);
     keys[col] = C.KEY_FUNCS[n];
@@ -416,7 +449,9 @@ export function decodeStock(data, cp) {
       if (rowi < objs.length) { objs[rowi].stock = objs[rowi].stock || {}; objs[rowi].stock[TABLES[t].columns[col]] = v; }
       continue;
     }
-    const t = ORDER[tid], tab = TABLES[t];
+    const t = tid < ORDER.length ? ORDER[tid] : Object.keys(DIALOGS).find((n) => DIALOGS[n].id === tid);
+    if (!t) continue;                         // a table this version does not know (newer CPS)
+    const tab = TABLES[t];
     if (tab.kind === "record") { const rows = cp.stock[t] || (cp.stock[t] = defaultRows(t)); put(rows[0], col, v); }
     else if (col === ROWS) { lists[t] = Array.from({ length: parseInt(v, 10) }, () => Array(tab.columns.length).fill("")); cp.stock[t] = lists[t]; }
     else put(lists[t][rowi], col, v);

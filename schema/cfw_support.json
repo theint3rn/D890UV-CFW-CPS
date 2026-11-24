@@ -1,0 +1,2409 @@
+{
+ "format": "cfw_support 1",
+ "about": "Which stock CPS data the cfw firmware uses, per radio model. sections: stock CPS tree node (schema/stock_*.json tree target) -> {label, model: state}. keys: table -> column -> {model: state}; Channel lists every stock channel column cfw does not model itself, other tables only columns that differ from their section. Missing = stored; a column missing from keys has its section's state. Edit states by hand or with tools/make_cfw_support.py --set, then run it (copies to web/schema) and make vectors.",
+ "states": {
+  "used": "the cfw firmware uses it",
+  "stored": "kept in the cfw codeplug, the firmware ignores it (GUI: 'not used by cfw yet' note, *)",
+  "n/a": "this radio / its stock CPS has no such feature (hidden)"
+ },
+ "models": [
+  "D890UV",
+  "D168UV"
+ ],
+ "sections": {
+  "Channel": {
+   "label": "Channel",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DMRZone": {
+   "label": "Zone",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "ScanList": {
+   "label": "Scan List",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "AMAir": {
+   "label": "AM Air",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "AMZone": {
+   "label": "AM Zone",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "PrefabricatedSMS": {
+   "label": "Pre-defined SMS",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "FM": {
+   "label": "FM",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "AutoRepeaterOffsetFrequencys": {
+   "label": "Auto Repeater Offset Frequencies",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "@device": {
+   "label": "Device Information",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "OptionalSetting": {
+   "label": "Optional Settings",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "OptionalSetting#Bluetooth": {
+   "label": "Bluetooth",
+   "D890UV": "stored",
+   "D168UV": "stored"
+  },
+  "@alarm": {
+   "label": "Alarm Setting",
+   "D890UV": "stored",
+   "D168UV": "stored"
+  },
+  "@local": {
+   "label": "Local Information",
+   "D890UV": "n/a",
+   "D168UV": "n/a"
+  },
+  "HotKey_HotKey": {
+   "label": "Hot Key",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "APRS": {
+   "label": "APRS",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "GPSRoaming": {
+   "label": "GPS Roaming",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "@masterid": {
+   "label": "Master ID",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "RadioIDList": {
+   "label": "Radio ID List",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DMRTalkGroups": {
+   "label": "Contact/Talk Group",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "RoamingChannel": {
+   "label": "Roaming Channel",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "RoamingZone": {
+   "label": "Roaming Zone",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DMRReceiveGroupCallList": {
+   "label": "Receive Group Call List",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "EncryptionCode": {
+   "label": "Encryption Code",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "ARC4EncryptionCode": {
+   "label": "ARC4 Encryption Code",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "AESEncryptionCode": {
+   "label": "AES Encryption Code",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DMRDigitalContactList": {
+   "label": "Digital Contact List",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "@friends": {
+   "label": "Friends List",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "@talkalias": {
+   "label": "Talk Alias",
+   "D890UV": "stored",
+   "D168UV": "stored"
+  },
+  "TalkGroupWhitelist(Repeater)": {
+   "label": "Talk Group Whitelist (Repeater)",
+   "D890UV": "stored",
+   "D168UV": "n/a"
+  },
+  "DigitalContactWhitelist(Repeater)": {
+   "label": "Digital Contact Whitelist (Repeater)",
+   "D890UV": "stored",
+   "D168UV": "n/a"
+  },
+  "NXSetting": {
+   "label": "NX Setting",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "NXTalkGroup": {
+   "label": "NX Talk Group",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "NXReceiveGroupCallList": {
+   "label": "NX Receive Group Call List",
+   "D890UV": "stored",
+   "D168UV": "n/a"
+  },
+  "NXEncryptionCode": {
+   "label": "NX Encryption Code",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "NXStateMSG": {
+   "label": "NX State Message",
+   "D890UV": "stored",
+   "D168UV": "n/a"
+  },
+  "NXDigitalContactList": {
+   "label": "NX Digital Contact List",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "AnalogAddressBook": {
+   "label": "Analog Address Book",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "5ToneEncode": {
+   "label": "5Tone Encode",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "T5InfoCodes": {
+   "label": "5Tone Information Codes",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "T5Setting": {
+   "label": "5Tone Settings",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "2ToneEncode": {
+   "label": "2Tone Encode",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "T2Setting": {
+   "label": "2Tone Settings",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DTMFEncode": {
+   "label": "DTMF Encode",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "DTMFSetting": {
+   "label": "DTMF Settings",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "MDC1200AddressBook": {
+   "label": "MDC1200 Address Book",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "MDC1200Encode": {
+   "label": "MDC1200 Encode",
+   "D890UV": "used",
+   "D168UV": "n/a"
+  },
+  "AlertTone": {
+   "label": "Alert Tone",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "HotKey_QuickCall": {
+   "label": "Hot Key Quick Call",
+   "D890UV": "used",
+   "D168UV": "used"
+  },
+  "HotKey_State": {
+   "label": "Hot Key State",
+   "D890UV": "stored",
+   "D168UV": "stored"
+  },
+  "@enccode": {
+   "label": "Encryption Code (dialog)",
+   "D890UV": "n/a",
+   "D168UV": "used"
+  },
+  "QDC1200AddressBook": {
+   "label": "QDC Address Book",
+   "D890UV": "n/a",
+   "D168UV": "used"
+  },
+  "QDC1200EnCodeTable": {
+   "label": "QDC1200 Setting",
+   "D890UV": "n/a",
+   "D168UV": "used"
+  },
+  "QDC1200DECodeTable": {
+   "label": "QDC1200 Decode",
+   "D890UV": "n/a",
+   "D168UV": "used"
+  }
+ },
+ "keys": {
+  "Channel": {
+   "Radio ID": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Busy Lock/TX Permit": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Squelch Mode": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Optional Signal": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DTMF ID": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "2Tone ID": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "5Tone ID": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "PTT ID": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "PTT Prohibit": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Reverse": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Digital Duplex": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "Slot Suit": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AES Digital Encryption": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Digital Encryption": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Call Confirmation": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Work Alone": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Custom CTCSS": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "2TONE Decode": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Ranging": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Idle TX": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "APRS RX": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Analog APRS PTT Mode": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Digital APRS PTT Mode": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "APRS Report Type": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Digital APRS Report Channel": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Correct Frequency[Hz]": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "SMS Confirmation": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Exclude channel from roaming": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DMR MODE": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DataACK Disable": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "R5toneBot": {
+    "D890UV": "used",
+    "D168UV": "n/a"
+   },
+   "R5ToneEot": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Auto Scan": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Ana APRS Mute": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "Send Talker Alias DMR/NX": {
+    "D890UV": "used",
+    "D168UV": "n/a"
+   },
+   "AnaAprsTxPath": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ARC4": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "ex_emg_kind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Rpga_Mdc": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DisturEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DisturFreq": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "dmr_crc_ignore": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "compand": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "tx_talkalaes": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "dup_call": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "tx_int": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "BtRxState": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "idle_tx": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "nxdn_wn": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxdnRpga": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "nxdnSqCon": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxdnTxBusy": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxDnPttId": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "EnRan": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "DeRan": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxdnEncry": {
+    "D890UV": "used",
+    "D168UV": "n/a"
+   },
+   "NxdnGroupId": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxdnIdNum": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "NxdnStateNum": {
+    "D890UV": "stored",
+    "D168UV": "n/a"
+   },
+   "txcc": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Through Mode": {
+    "D890UV": "n/a",
+    "D168UV": "stored"
+   },
+   "R5ToneBot": {
+    "D890UV": "n/a",
+    "D168UV": "used"
+   },
+   "Ana Aprs Mute": {
+    "D890UV": "n/a",
+    "D168UV": "stored"
+   },
+   "Send Talker Aias": {
+    "D890UV": "n/a",
+    "D168UV": "used"
+   },
+   "Compand": {
+    "D890UV": "n/a",
+    "D168UV": "stored"
+   }
+  },
+  "NXSetting": {
+   "StationId ": {
+    "D890UV": "stored"
+   },
+   "StationType": {
+    "D890UV": "stored"
+   },
+   "OwnIdAbleMin": {
+    "D890UV": "stored"
+   },
+   "OwnIdAbleMax": {
+    "D890UV": "stored"
+   },
+   "TxAliasEn": {
+    "D890UV": "stored"
+   },
+   "TxAliasName": {
+    "D890UV": "stored"
+   },
+   "NxdnRemoteAck": {
+    "D890UV": "stored"
+   },
+   "SecondCallBeep": {
+    "D890UV": "stored"
+   },
+   "BeppInGroupCall": {
+    "D890UV": "stored"
+   },
+   "GroupInPriCall": {
+    "D890UV": "stored"
+   },
+   "ReTryTimes": {
+    "D890UV": "stored"
+   },
+   "TxBusyWait": {
+    "D890UV": "stored"
+   },
+   "DataAckWait": {
+    "D890UV": "stored"
+   },
+   "MicEnhance": {
+    "D890UV": "stored"
+   },
+   "ResetTime": {
+    "D890UV": "stored"
+   },
+   "SoundMode": {
+    "D890UV": "stored"
+   },
+   "PriConfirm": {
+    "D890UV": "stored"
+   },
+   "RespondTime_nop": {
+    "D890UV": "stored"
+   },
+   "PttDelayTime_NOP": {
+    "D890UV": "stored"
+   },
+   "TxModuDelay": {
+    "D890UV": "stored"
+   },
+   "TxPreTime": {
+    "D890UV": "stored"
+   },
+   "PriConfirmBeep": {
+    "D890UV": "stored"
+   },
+   "PriProBeeo": {
+    "D890UV": "stored"
+   },
+   "PriCallBeepDelay": {
+    "D890UV": "stored"
+   },
+   "SelCallAck": {
+    "D890UV": "stored"
+   },
+   "SelCallAckWait_nop": {
+    "D890UV": "stored"
+   },
+   "PriCallBeep": {
+    "D890UV": "stored"
+   },
+   "GroupCallBeep": {
+    "D890UV": "stored"
+   },
+   "SelCallBeep_nop": {
+    "D890UV": "stored"
+   },
+   "PriCallLed": {
+    "D890UV": "stored"
+   },
+   "GroupCallLed": {
+    "D890UV": "stored"
+   },
+   "SelCallLed_nop": {
+    "D890UV": "stored"
+   },
+   "SelCallLedEn_nop": {
+    "D890UV": "stored"
+   },
+   "StateMsg1": {
+    "D890UV": "stored"
+   },
+   "StateMsg2": {
+    "D890UV": "stored"
+   },
+   "DefaultState": {
+    "D890UV": "stored"
+   },
+   "StartState": {
+    "D890UV": "stored"
+   },
+   "RemoteKillState": {
+    "D890UV": "stored"
+   },
+   "ShutState": {
+    "D890UV": "stored"
+   },
+   "NxdnMoniId": {
+    "D890UV": "stored"
+   }
+  },
+  "NXTalkGroup": {
+   "LAST_NAME": {
+    "D890UV": "stored"
+   },
+   "CITY": {
+    "D890UV": "stored"
+   },
+   "STATE": {
+    "D890UV": "stored"
+   },
+   "COUNTRY": {
+    "D890UV": "stored"
+   },
+   "Attr": {
+    "D890UV": "stored"
+   },
+   "Ring": {
+    "D890UV": "stored"
+   }
+  },
+  "NXDigitalContactList": {
+   "CITY": {
+    "D890UV": "stored"
+   },
+   "STATE": {
+    "D890UV": "stored"
+   },
+   "COUNTRY": {
+    "D890UV": "stored"
+   },
+   "Attr": {
+    "D890UV": "stored"
+   },
+   "TxForbid": {
+    "D890UV": "stored"
+   },
+   "Ring": {
+    "D890UV": "stored"
+   }
+  },
+  "DMRDigitalContactList": {
+   "No.": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "City": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "State": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Country": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Remarks": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Alert": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   }
+  },
+  "QDC1200DECodeTable": {
+   "Auto Reset Time[s]": {
+    "D168UV": "stored"
+   },
+   "Remote Listening Duration[S]": {
+    "D168UV": "stored"
+   },
+   "Remotely Kill Allow": {
+    "D168UV": "stored"
+   },
+   "Remotely Moniton Allow": {
+    "D168UV": "stored"
+   },
+   "PttId Lock Time[S]": {
+    "D168UV": "stored"
+   }
+  },
+  "QDC1200EnCodeTable": {
+   "Need To Answer": {
+    "D168UV": "stored"
+   }
+  },
+  "QDC1200AddressBook": {
+   "Ack": {
+    "D168UV": "stored"
+   }
+  },
+  "MDC1200Encode": {
+   "ENC_MDC_ACK": {
+    "D890UV": "stored"
+   }
+  },
+  "MDC1200AddressBook": {
+   "ACK": {
+    "D890UV": "stored"
+   },
+   "Attr": {
+    "D890UV": "stored"
+   }
+  },
+  "OptionalSetting": {
+   "DSP": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Language": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Password": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "SQL2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "VOX_Delay": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "ScanType": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "MicLevel": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RMV1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RMV2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "STE_Type": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "STE_Freq": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "GroupTalkHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PersonTalkHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PreWave": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Preamble": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Work_FMCH": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "FM_VFO": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Work_Zone1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Work_Zone2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "FM_En": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Record_En": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MonType": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "FreqDis": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "FmMon": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "MainState": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SubMode": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "TBST": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "TalkTips": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "OverVoice": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "VoxHeadset": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Reserved_Start_Char": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Password_Char": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "Reserved_EMG_Kind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Voice_Note": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SqOnVoice": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "IdleWait": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MissCallFilter": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "TalkOverPoint": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiStunKillEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Reserved_DigiKillEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RemoteMoniEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "GpsReplyEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ContactOutSetEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PfLongTime": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "VolNoteEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiMoni": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AprsUpDate": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AprsTxFreq": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AnaHoldTime": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "VfoScanFreq0": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "VfoScanFreq1": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "VfoScanFreq2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "VfoScanFreq3": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "CurTalkPathHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PriZoneA": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PriZoneB": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "EnSoundEffect": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MsgOacsuSet": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiMoniCc": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiMoniId": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "LastCallDis": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "EarMaxVol": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "GpsTextUsed": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RecordDelay": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "CallModeDisKind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BlueToothOn": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "MicInBlueTooth": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SpkInBlueTooth": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "WtRecordNote": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MeasurePeriod": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BhtMicGain": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "BhtSpkGain": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "ChanNumDisKind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MenuDisWorkContact": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Ext_Opt1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "WanderEffectWait": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Ext_Opt2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Scan_Pri_Current": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "GroupCallS_Ext": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Contact_Compression": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RX_Contact_Compression": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "File_Optimization": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AutoRepeaterB": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BookOwnId": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AprsDistanceDis": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "StartZone2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "StartCurChan2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BsModeCheck": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "TimeBsCheck": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BsCheckTimes": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "TxDimWait": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DiviDisEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "LastHeardChanSet": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ChanNameColour": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "OutRepNote": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RxDimWait": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RoamEffectChanDis": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "FixTimeMute": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "comVersion": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "OutNoteTimes": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "StartTestGps": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "StartResetEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BhtHoldTime": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "BhtHoldDelay": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "WxAlarmSign": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "BhtPttHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "UhfAutoRep2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "VhfAutoRep2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "CurUhfAutoRep": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "CurVhfAutoRep": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "PttSleepTime": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "GpsMode": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SteTime": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "CallSignColour": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AutoRepMinFreqV2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AutoRepMaxFreqV2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AutoRepMinFreqU2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "autoRepMaxFreqU2": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DialGroupHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DialPrivateHold": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ChanNameColourB": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiEmgKind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "WorkCharDisColour": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "bkpic": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "TxAgcCon": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ZoneNameColourA": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ZoneNameColourB": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ApoKind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SmsFormat": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ChanDisCtr": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AnaSqOnVoice": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "DateDisFormat": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "AnaMic": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ZoneBarsEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "VcallRpheader": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RepMode": {
+    "D890UV": "stored"
+   },
+   "RepCcLimit": {
+    "D890UV": "stored"
+   },
+   "RepSlotPathA": {
+    "D890UV": "stored"
+   },
+   "RepSlotPathB": {
+    "D890UV": "stored"
+   },
+   "DcsSte": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Drc": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DmrRasEn": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "RxNr": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "TxNr": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "NightMode": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "CurWxChan": {
+    "D890UV": "stored"
+   },
+   "AmChanVfo": {
+    "D890UV": "stored"
+   },
+   "CurAmChan": {
+    "D890UV": "stored"
+   },
+   "AmSqLevel": {
+    "D890UV": "stored"
+   },
+   "BtNrBefore": {
+    "D890UV": "stored"
+   },
+   "BtNrAfter": {
+    "D890UV": "stored"
+   },
+   "SateLocalKind": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SateTxPower": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SateAnaSql": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SateAosLimit": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DigiProtocal": {
+    "D890UV": "stored"
+   },
+   "NxdnMic": {
+    "D890UV": "stored"
+   },
+   "ResetDigiProtocal": {
+    "D890UV": "stored"
+   },
+   "VolType": {
+    "D890UV": "stored"
+   },
+   "MinVolData": {
+    "D890UV": "stored"
+   },
+   "NlightStartHour": {
+    "D168UV": "stored"
+   },
+   "NlightStartMin": {
+    "D168UV": "stored"
+   },
+   "NlightEndHour": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName1": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName2": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName3": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName4": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName5": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName6": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName7": {
+    "D168UV": "stored"
+   },
+   "SateFixPointName8": {
+    "D168UV": "stored"
+   },
+   "NlightEndMin": {
+    "D168UV": "stored"
+   }
+  },
+  "APRS": {
+   "Manual TX Interval[s]": {
+    "D890UV": "stored"
+   },
+   "Support For Roaming": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "channel8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "slot8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Aprs Tg8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "APRS TG": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Type": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Repeater Activation Delay[ms]": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "APRS TX Tone": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmit Delay[ms]": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Send Sub Tone": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "CTCSS": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DCS": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Prewave Time[ms]": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmit Power": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID8": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter9": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign9": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID9": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter10": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign10": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID10": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter11": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign11": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID11": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter12": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign12": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID12": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter13": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign13": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID13": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter14": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign14": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID14": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter15": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign15": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID15": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter16": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign16": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID16": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter17": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign17": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID17": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter18": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign18": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID18": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter19": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign19": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID19": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter20": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign20": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID20": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter21": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign21": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID21": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter22": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign22": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID22": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter23": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign23": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID23": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter24": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign24": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID24": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter25": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign25": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID25": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter26": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign26": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID26": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter27": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign27": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID27": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter28": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign28": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID28": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter29": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign29": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID29": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter30": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign30": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID30": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter31": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign31": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID31": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Receive Filter32": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Call Sign32": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "SSID32": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "POSITION": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MIC-E": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "OBJECT": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "ITEM": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "MESSAGE": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "WX REPORT": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "NMEA REPORT": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "STATUS REPORT": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "OTHER": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency0": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency1": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency2": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency3": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency4": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency5": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency6": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Transmission Frequency7": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "Manual TX Intervals[s]": {
+    "D168UV": "stored"
+   },
+   "LatiDegree1": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt1": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark1": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude1": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree1": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt1": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark1": {
+    "D168UV": "stored"
+   },
+   "East  And West Things1": {
+    "D168UV": "stored"
+   },
+   "LatiDegree2": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt2": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark2": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude2": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree2": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt2": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark2": {
+    "D168UV": "stored"
+   },
+   "East  And West Things2": {
+    "D168UV": "stored"
+   },
+   "LatiDegree3": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt3": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark3": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude3": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree3": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt3": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark3": {
+    "D168UV": "stored"
+   },
+   "East  And West Things3": {
+    "D168UV": "stored"
+   },
+   "LatiDegree4": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt4": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark4": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude4": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree4": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt4": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark4": {
+    "D168UV": "stored"
+   },
+   "East  And West Things4": {
+    "D168UV": "stored"
+   },
+   "LatiDegree_21": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt_21": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark_21": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude_21": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree_21": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt_21": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark_21": {
+    "D168UV": "stored"
+   },
+   "East  And West Things_21": {
+    "D168UV": "stored"
+   },
+   "LatiDegree_22": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt_22": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark_22": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude_22": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree_22": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt_22": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark_22": {
+    "D168UV": "stored"
+   },
+   "East  And West Things_22": {
+    "D168UV": "stored"
+   },
+   "LatiDegree_23": {
+    "D168UV": "stored"
+   },
+   "LatiMinInt_23": {
+    "D168UV": "stored"
+   },
+   "LatiMinMark_23": {
+    "D168UV": "stored"
+   },
+   "North And South Latitude_23": {
+    "D168UV": "stored"
+   },
+   "LongtiDegree_23": {
+    "D168UV": "stored"
+   },
+   "LongtiMinInt_23": {
+    "D168UV": "stored"
+   },
+   "LongtiMinMark_23": {
+    "D168UV": "stored"
+   },
+   "East  And West Things_23": {
+    "D168UV": "stored"
+   }
+  },
+  "AlarmSetting": {
+   "AlarmSigType": {
+    "D890UV": "n/a",
+    "D168UV": "used"
+   },
+   "AlarmQGroup": {
+    "D890UV": "n/a"
+   },
+   "AlarmAEmergency": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmATime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmATxTime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmARxTime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmAChannel": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmAEniSend": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmACycle": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDEmergency": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDChannel": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDTime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDTxTime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDRxTime": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDEniSend": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDCycle": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDId": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDCallType": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmDReceive": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmWResponse": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmWWarning": {
+    "D890UV": "used",
+    "D168UV": "used"
+   },
+   "AlarmWMode": {
+    "D890UV": "used",
+    "D168UV": "used"
+   }
+  },
+  "T5Setting": {
+   "T5TimeDecTone": {
+    "D890UV": "n/a",
+    "D168UV": "stored"
+   },
+   "T5Units": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "T5AutoReset": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "T5FirstDelay": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "T5SideTone": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "T5FirstAfterStop": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   }
+  },
+  "TalkAlias": {
+   "AliasType": {
+    "D890UV": "n/a"
+   },
+   "AliasFormat": {
+    "D168UV": "n/a",
+    "D890UV": "used"
+   },
+   "AliasPrio": {
+    "D890UV": "used",
+    "D168UV": "used"
+   }
+  },
+  "DTMFSetting": {
+   "DtmfAutoReset": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DtmfPttPause": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DtmfSideTone": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DtmfPttId": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DtmfKill": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "DtmfStun": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   }
+  },
+  "T2Setting": {
+   "T2AutoReset": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   },
+   "T2SideTone": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   }
+  },
+  "T5InfoCodes": {
+   "T5InfoFunc": {
+    "D890UV": "stored",
+    "D168UV": "stored"
+   }
+  }
+ }
+}

@@ -94,6 +94,10 @@ def write_radio(port, cp, log=print, allow_hardware=False, confirm=None, verify=
             r.end()
             log("cancelled, nothing written")
             return None
+        if C.LAST_USERDB["written"] or C.LAST_USERDB["dropped"]:
+            log("user database (DMR / NX Digital Contact List): %d entries for caller names%s"
+                % (C.LAST_USERDB["written"], ", %d left out (no room in the codeplug region)" % C.LAST_USERDB["dropped"]
+                   if C.LAST_USERDB["dropped"] else ""))
         log("writing %d bytes ..." % len(data))
         r.write_codeplug(data, progress)
         ok = r.end()

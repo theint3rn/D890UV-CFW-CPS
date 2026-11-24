@@ -23,7 +23,16 @@ The cfw CPS follows the stock D890UV CPS V1.05 (mapped in [docs/STOCK_CPS_MAP.md
   encryption, state messages, contacts) and Analog (address book, 2/5-Tone, DTMF, MDC1200, alert tones, hot keys).
 * **Same data:** all 38 tables of the stock "Export All", with the stock column names, order and defaults
   (`schema/stock_d890uv.json`). Optional Settings show the stock dialog's 17 tabs with the stock labels.
-  Stock data cfw does not use yet is stored in the codeplug and marked *not used by cfw yet* (`*` in the web tree).
+  Stock data cfw does not use yet is stored in the codeplug and marked *not used by cfw yet* (`*` in the tree).
+  What the firmware uses is set per radio model in `schema/cfw_support.json` (stock tree node / column ->
+  `used` | `stored` | `n/a`): `used` shows plainly, `stored` gets the note and `*`, `n/a` (e.g. AM Air on the D168UV,
+  QDC1200 on the D890UV) is hidden for that model. Change states with
+  `python3 tools/make_cfw_support.py --set AMAir D890UV used` (or `--set "Channel:Squelch Mode" D168UV used`; it
+  also copies the file to `web/schema/`), then `make vectors` and `python3 tools/make_stock_map_doc.py [D168UV]`.
+* **Dialogs kept only in the `.rdt`** (Alarm Setting, DTMF / 2Tone / 5Tone settings and 5Tone information codes, Talk / AIR
+  Alias, Friends List, the D168UV Encryption Code): decoded from the stock CPS, editable in both GUIs, carried in the cfw
+  codeplug (section 10 tables 64-72, `docs/CODEPLUG.md`) and written back to the `.rdt`
+  (`schema/rdt_dialogs.json`, fields in `docs/STOCK_CPS_MAP*.md`). Local Information is live radio data, not stored.
 * **Same files:** import/export the stock CSV set (.LST + 38 CSV) byte for byte; import D878UV (V1270) `.rdt`;
   open / save the stock D890UV `.rdt` (V1323). Open + save gives the same bytes (a 6.4 MB real codeplug included).
   An `.rdt` that was not opened from one is written on cfw_cps's built-in blank file, or on your own stock CPS

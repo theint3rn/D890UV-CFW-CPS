@@ -1,0 +1,1480 @@
+{
+ "format": "rdt_dialogs 1",
+ "about": "Write schema/rdt_dialogs.json (copied to web/schema/): the stock CPS dialogs that exist only in the .rdt (no CSV), as",
+ "undecoded": {
+  "both": [
+   "Alarm Setting > Analog > Emergency ID (list content depends on the signalling tables)",
+   "Alarm Setting > ENI Type list texts (the value is stored raw)",
+   "5Tone Setting: Stop Code, Stop Time (header bytes 0x23-0x25 are not tied to one field); the Function Name of an information code (the string after the ID is kept as it is)",
+   "2Tone Setting > Decode tab",
+   "DTMF Setting > Special Call",
+   "Encode ID tables (CSV)"
+  ],
+  "D890UV": [
+   "Alarm Setting > QDC1200 Group ID: the stock D890UV CPS shows the bytes at C+0x56 but saves to C+0x4F, so it does not survive its own save (the frame is greyed out there)"
+  ],
+  "D168UV": [
+   "Talk Alias > Custom Text: the V1.07 dialog shows no text field when it is chosen; where (or if) a text is kept is not known",
+   "QDC1200 Setting: Max ACK wait, Sync headers, Pretime, Try times, Side Tone"
+  ],
+  "both_live": [
+   "Local Information: the stock CPS opens the COM port for it; it is live radio data, not in the .rdt"
+  ]
+ },
+ "tables": {
+  "AlarmSetting": {
+   "id": 64,
+   "kind": "record",
+   "title": "Alarm Setting",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "AlarmAEmergency",
+     "label": "Analog Emergency Alarm",
+     "choices": [
+      "Alarm",
+      "Transpond+Background",
+      "Transpond+Alarm",
+      "Both"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 51,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 51,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmAEniType",
+     "label": "Analog ENI Type",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 52,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 52,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmATime",
+     "label": "Analog Alarm Time [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 54,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 54,
+      "default": "20"
+     }
+    },
+    {
+     "name": "AlarmATxTime",
+     "label": "Analog Duration of TX [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 55,
+      "default": "31"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 55,
+      "default": "31"
+     }
+    },
+    {
+     "name": "AlarmARxTime",
+     "label": "Analog Duration of RX [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 56,
+      "default": "31"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 56,
+      "default": "31"
+     }
+    },
+    {
+     "name": "AlarmAChannel",
+     "label": "Analog Emergency Channel",
+     "D890UV": {
+      "type": "chan",
+      "seg": "C",
+      "off": 57,
+      "default": "1"
+     },
+     "D168UV": {
+      "type": "chan",
+      "seg": "C",
+      "off": 57,
+      "default": "1"
+     }
+    },
+    {
+     "name": "AlarmAEniSend",
+     "label": "Analog ENI Send Select",
+     "choices": [
+      "Assigned Channel",
+      "Selected Channel"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 59,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 59,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmACycle",
+     "label": "Analog Emergency Cycle (0 = Continuous)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 60,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 60,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDEmergency",
+     "label": "Digital Emergency Alarm",
+     "choices": [
+      "Alarm",
+      "Transpond+Background",
+      "Transpond+NoLocalAlarm",
+      "Transpond+LocalAlarm"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 61,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 61,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDChannel",
+     "label": "Digital Emergency Channel",
+     "D890UV": {
+      "type": "chan",
+      "seg": "C",
+      "off": 62,
+      "default": "1"
+     },
+     "D168UV": {
+      "type": "chan",
+      "seg": "C",
+      "off": 62,
+      "default": "1"
+     }
+    },
+    {
+     "name": "AlarmDTime",
+     "label": "Digital Alarm Time [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 64,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 64,
+      "default": "20"
+     }
+    },
+    {
+     "name": "AlarmDTxTime",
+     "label": "Digital Duration of TX [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 65,
+      "default": "31"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 65,
+      "default": "31"
+     }
+    },
+    {
+     "name": "AlarmDRxTime",
+     "label": "Digital Duration of RX [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 66,
+      "default": "31"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 66,
+      "default": "31"
+     }
+    },
+    {
+     "name": "AlarmDEniSend",
+     "label": "Digital ENI Send Select",
+     "choices": [
+      "Assigned Channel",
+      "Selected Channel"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 67,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 67,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDCycle",
+     "label": "Digital Emergency Cycle (0 = Continuous)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 68,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 68,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDId",
+     "label": "Digital TG/DMR ID",
+     "D890UV": {
+      "type": "u32",
+      "seg": "C",
+      "off": 74,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u32",
+      "seg": "C",
+      "off": 74,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDCallType",
+     "label": "Digital Call Type",
+     "choices": [
+      "Private Call",
+      "Group Call",
+      "All Call"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 73,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 73,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmDReceive",
+     "label": "Receive Alarm",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 72,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 72,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmQKind",
+     "label": "QDC1200 Kind",
+     "choices": [
+      "Private Call",
+      "Group Call",
+      "All Call"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 78,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 78,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmQGroup",
+     "label": "QDC1200 Group ID",
+     "D168UV": {
+      "type": "hex3",
+      "seg": "C",
+      "off": 79,
+      "default": "000"
+     }
+    },
+    {
+     "name": "AlarmQPrivate",
+     "label": "QDC1200 Private ID",
+     "D890UV": {
+      "type": "hex4",
+      "seg": "C",
+      "off": 81,
+      "default": "0000"
+     },
+     "D168UV": {
+      "type": "hex4",
+      "seg": "C",
+      "off": 81,
+      "default": "0000"
+     }
+    },
+    {
+     "name": "AlarmSigType",
+     "label": "Analog alarm signaling type",
+     "choices": [
+      "None",
+      "DTMF",
+      "5TONE",
+      "MDC1200"
+     ],
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 83,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmWResponse",
+     "label": "Work Alone Response Time (0 = 1 min)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 69,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 69,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmWWarning",
+     "label": "Work Alone Warning Time (0 = 1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 70,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 70,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AlarmWMode",
+     "label": "Work Alone Response",
+     "choices": [
+      "Key",
+      "Voice Transmit"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 71,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "C",
+      "off": 71,
+      "default": "0"
+     }
+    }
+   ],
+   "node": "@alarm",
+   "node_after": {
+    "D890UV": "DMRDigitalContactList"
+   }
+  },
+  "DTMFSetting": {
+   "id": 65,
+   "kind": "record",
+   "title": "DTMF Settings",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "DtmfTxTime",
+     "label": "DTMF Transmitting Time",
+     "choices": [
+      "50 ms",
+      "100 ms",
+      "200 ms",
+      "300 ms",
+      "500 ms"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 63,
+      "default": "1"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 63,
+      "default": "1"
+     }
+    },
+    {
+     "name": "DtmfSelfId",
+     "label": "DTMF Self ID (3 digits; the stock CPS shows letters blank)",
+     "D890UV": {
+      "type": "str3",
+      "seg": "A",
+      "off": 57,
+      "default": "000"
+     },
+     "D168UV": {
+      "type": "str3",
+      "seg": "A",
+      "off": 57,
+      "default": "000"
+     }
+    },
+    {
+     "name": "DtmfInterval",
+     "label": "DTMF Interval Character (10 A, 11 B, 12 C, 13 D, 14 *, 15 #)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 51,
+      "default": "14"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 51,
+      "default": "14"
+     }
+    },
+    {
+     "name": "DtmfGroup",
+     "label": "Group Code (0 Off, 10 A .. 13 D, 14 *, 15 #)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 52,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 52,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfDecResp",
+     "label": "Decoding Response",
+     "choices": [
+      "None",
+      "Beep Tone",
+      "Beep Tone & Respond"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 53,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 53,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfFirstDigit",
+     "label": "First Digit Time (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 55,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 55,
+      "default": "20"
+     }
+    },
+    {
+     "name": "DtmfPretime",
+     "label": "Pretime (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 54,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 54,
+      "default": "20"
+     }
+    },
+    {
+     "name": "DtmfAutoReset",
+     "label": "Auto Reset Time (D890UV: s, D168UV: 0.1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 56,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 56,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfTimeLapse",
+     "label": "Time-Lapse After Encode (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 61,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 61,
+      "default": "20"
+     }
+    },
+    {
+     "name": "DtmfPttPause",
+     "label": "PTT ID Pause Time (raw)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 62,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 62,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfDCodePause",
+     "label": "D Code Pause (s, 0 = Off)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 65,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 65,
+      "default": "10"
+     }
+    },
+    {
+     "name": "DtmfSideTone",
+     "label": "Side Tone",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 60,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 60,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfPttId",
+     "label": "PTT ID",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 64,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 64,
+      "default": "0"
+     }
+    },
+    {
+     "name": "DtmfBot",
+     "label": "PTT ID Starting (BOT)",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_bot",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_bot",
+      "default": ""
+     }
+    },
+    {
+     "name": "DtmfEot",
+     "label": "PTT ID Ending (EOT)",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_eot",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_eot",
+      "default": ""
+     }
+    },
+    {
+     "name": "DtmfKill",
+     "label": "Remotely Kill",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_kill",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_kill",
+      "default": ""
+     }
+    },
+    {
+     "name": "DtmfStun",
+     "label": "Remotely Stun",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_stun",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "dtmf_stun",
+      "default": ""
+     }
+    }
+   ],
+   "after": {
+    "D890UV": "DTMFEncode",
+    "D168UV": "DTMFEncode"
+   }
+  },
+  "T2Setting": {
+   "id": 66,
+   "kind": "record",
+   "title": "2Tone Settings",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "T2First",
+     "label": "1st Tone Duration (x 0.1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 66,
+      "default": "5"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 66,
+      "default": "5"
+     }
+    },
+    {
+     "name": "T2Second",
+     "label": "2nd Tone Duration (x 0.1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 67,
+      "default": "5"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 67,
+      "default": "5"
+     }
+    },
+    {
+     "name": "T2Long",
+     "label": "Long Tone Duration (x 0.1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 68,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 68,
+      "default": "10"
+     }
+    },
+    {
+     "name": "T2Gap",
+     "label": "Gap Time (x 100 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 69,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 69,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T2AutoReset",
+     "label": "Auto Reset Time (D890UV: s, D168UV: 0.1 s)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 70,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 70,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T2SideTone",
+     "label": "Side Tone",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 71,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 71,
+      "default": "0"
+     }
+    }
+   ],
+   "after": {
+    "D890UV": "2ToneEncode",
+    "D168UV": "2ToneEncode"
+   }
+  },
+  "T5Setting": {
+   "id": 67,
+   "kind": "record",
+   "title": "5Tone Settings",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "T5SelfId",
+     "label": "Self ID",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_self",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_self",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5DecStd",
+     "label": "Decode Standard",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 25,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 25,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5DecResp",
+     "label": "Decoding Response",
+     "choices": [
+      "None",
+      "Beep Tone",
+      "Beep Tone & Respond"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 24,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 24,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5TimeDecTone",
+     "label": "Time Of Decode Tone [ms]",
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 27,
+      "default": "70"
+     }
+    },
+    {
+     "name": "T5DecTime",
+     "label": "Decode Time (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 38,
+      "default": "2"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 38,
+      "default": "2"
+     }
+    },
+    {
+     "name": "T5Units",
+     "label": "5TONE Dec Units (bit mask, bit 0 = unit 1)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 44,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 44,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5DispAny",
+     "label": "Disp AnyID",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 45,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 45,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5Pretime",
+     "label": "Pretime (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 29,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 29,
+      "default": "20"
+     }
+    },
+    {
+     "name": "T5TimeLapse",
+     "label": "Time-Lapse After Encode (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 30,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 30,
+      "default": "20"
+     }
+    },
+    {
+     "name": "T5PttPause",
+     "label": "PTT ID Pause Time [s] (0 = Off)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 31,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 31,
+      "default": "10"
+     }
+    },
+    {
+     "name": "T5AutoReset",
+     "label": "Auto Reset Time [s]",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 32,
+      "default": "10"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 32,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5FirstDelay",
+     "label": "First Delay (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 33,
+      "default": "20"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 33,
+      "default": "20"
+     }
+    },
+    {
+     "name": "T5SideTone",
+     "label": "Side Tone",
+     "choices": [
+      "Off",
+      "On"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 34,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 34,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5FirstAfterStop",
+     "label": "First Delay Time After Stop (x 10 ms)",
+     "D890UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 39,
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "A",
+      "off": 39,
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5BotId",
+     "label": "PTT ID Starting (BOT): Encode ID",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_bot",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_bot",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5BotStd",
+     "label": "PTT ID Starting (BOT): standard (index)",
+     "D890UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_bot_std",
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_bot_std",
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5BotTime",
+     "label": "PTT ID Starting (BOT): tone time [ms]",
+     "D890UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_bot_time",
+      "default": "70"
+     },
+     "D168UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_bot_time",
+      "default": "70"
+     }
+    },
+    {
+     "name": "T5EotId",
+     "label": "PTT ID Ending (EOT): Encode ID",
+     "D890UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_eot",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "hstr",
+      "seg": "H",
+      "off": "t5_eot",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5EotStd",
+     "label": "PTT ID Ending (EOT): standard (index)",
+     "D890UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_eot_std",
+      "default": "0"
+     },
+     "D168UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_eot_std",
+      "default": "0"
+     }
+    },
+    {
+     "name": "T5EotTime",
+     "label": "PTT ID Ending (EOT): tone time [ms]",
+     "D890UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_eot_time",
+      "default": "70"
+     },
+     "D168UV": {
+      "type": "hnum",
+      "seg": "H",
+      "off": "t5_eot_time",
+      "default": "70"
+     }
+    }
+   ],
+   "after": {
+    "D890UV": "5ToneEncode",
+    "D168UV": "5ToneEncode"
+   }
+  },
+  "T5InfoCodes": {
+   "id": 68,
+   "kind": "list",
+   "title": "5Tone Information Codes",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "T5InfoNo",
+     "label": "No.",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5InfoFunc",
+     "label": "Function Option (index)",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5InfoResp",
+     "label": "Decoding Response (index)",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "T5InfoId",
+     "label": "Information ID",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    }
+   ],
+   "after": {
+    "D890UV": "5ToneEncode",
+    "D168UV": "5ToneEncode"
+   },
+   "default_rows": {
+    "D890UV": [],
+    "D168UV": []
+   }
+  },
+  "TalkAlias": {
+   "id": 70,
+   "kind": "record",
+   "title": "Talk Alias / AIR Alias",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "AliasType",
+     "label": "Talker Alias Type",
+     "choices": [
+      "Radio Alias",
+      "Custom Text"
+     ],
+     "D168UV": {
+      "type": "u8",
+      "seg": "E",
+      "off": 23248,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AliasPrio",
+     "label": "Alias Display Priority",
+     "choices": {
+      "D168UV": [
+       "No Display",
+       "Contact Alias",
+       "Air Alias"
+      ],
+      "D890UV": [
+       "Off",
+       "Contact Alias",
+       "Air Alias DMR/NX"
+      ]
+     },
+     "D168UV": {
+      "type": "u8",
+      "seg": "E",
+      "off": 23247,
+      "default": "0"
+     },
+     "D890UV": {
+      "type": "u8",
+      "seg": "E",
+      "off": 22059,
+      "default": "0"
+     }
+    },
+    {
+     "name": "AliasFormat",
+     "label": "Alias Data Format",
+     "choices": [
+      "ISO 8",
+      "ISO 7",
+      "Unicode"
+     ],
+     "D890UV": {
+      "type": "u8",
+      "seg": "E",
+      "off": 22058,
+      "default": "0"
+     }
+    }
+   ],
+   "node": "@talkalias",
+   "node_after": {
+    "D890UV": "DMRDigitalContactList"
+   }
+  },
+  "FriendsList": {
+   "id": 71,
+   "kind": "list",
+   "title": "Friends List",
+   "models": [
+    "D890UV",
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export). Friends are entries of the digital contact list (by DMR ID).",
+   "fields": [
+    {
+     "name": "FriendNo",
+     "label": "No.",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "FriendId",
+     "label": "DMR ID",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    }
+   ],
+   "node": "@friends",
+   "node_after": {
+    "D890UV": "DMRDigitalContactList"
+   },
+   "default_rows": {
+    "D890UV": [],
+    "D168UV": []
+   }
+  },
+  "EncryptionCodeRdt": {
+   "id": 72,
+   "kind": "list",
+   "title": "Encryption Code (basic privacy)",
+   "models": [
+    "D168UV"
+   ],
+   "note": "Values of the stock CPS dialog, read from and written to .rdt files (not in the stock CSV export).",
+   "fields": [
+    {
+     "name": "EncNo",
+     "label": "No.",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "EncKey",
+     "label": "Encryption KEY (hex)",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    },
+    {
+     "name": "EncId",
+     "label": "Encryption ID",
+     "D890UV": {
+      "type": "list",
+      "default": ""
+     },
+     "D168UV": {
+      "type": "list",
+      "default": ""
+     }
+    }
+   ],
+   "node": "@enccode",
+   "node_after": {
+    "D890UV": "DMRDigitalContactList"
+   },
+   "default_rows": {
+    "D168UV": []
+   }
+  }
+ }
+}

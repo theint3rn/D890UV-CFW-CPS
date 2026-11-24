@@ -70,6 +70,14 @@ def main():
     syn.stock.pop("DMRDigitalContactList", None)        # radio encoding leaves the user DB out: keep .json == decode
     put("synth", syn, keep_created=True)
     diff_vector("synth", syn)
+    # user database (codeplug section 16, radio encoding only): DMR + NX Digital Contact Lists
+    udb = C.load(SYNTH)
+    udb.stock["DMRDigitalContactList"] = udb.stock["DMRDigitalContactList"][:20]
+    udb.stock["NXDigitalContactList"] = [["1001", "NX1CALL", "Ann", "Longlastname", "", "", "", "", "", ""],
+                                         ["70000", "TOOBIG", "x", "", "", "", "", "", "", ""],
+                                         ["1002", "NX2", "Cee", "", "", "", "", "", "", ""],
+                                         ["1001", "DUP", "", "", "", "", "", "", "", ""]]
+    put("userdb", udb, keep_created=True)
     from cps import stock as ST
     stock_set(SYNTH_CSV, "synthstock")
     priv = os.path.isdir(PVEC)
@@ -96,6 +104,7 @@ def main():
     s2.channels[0].stock = {"Busy Lock/TX Permit": "Channel Free", "Optional Signal": "DTMF"}
     s2.stock = {"OptionalSetting": ST.default_rows("OptionalSetting"), "PrefabricatedSMS": [["1", "Hello"], ["2", "73"]]}
     ST.set_stock_value(s2, "OptionalSetting", "TOT", "3")
+    s2.settings.batt_percent = True
     put("digital", s2)
     from cps import rdt as RD
     # stock .rdt files -> JSON (JS reader == Python reader); private: they hold stock CPS data
@@ -144,6 +153,58 @@ def main():
     print("vectors in", OUT, sorted(os.listdir(OUT)))
     if priv:
         print("private vectors in", PVEC)
+    support_vector()
+    dialog_vectors()
+
+
+def dialog_vectors():
+    """tests/vectors/dialogs_*: a synthetic codeplug with the .rdt-only dialogs filled in: .d8cp (radio), .rdt (built-in blank), rows"""
+    from cps import rdt as RD, stock as ST
+    from dialog_sample import sample as dsample
+    old = RD.template_path
+    RD.template_path = lambda model="D890UV": None
+    for model, ver in (("D890UV", "v1323"), ("D168UV", "v1292")):
+        cp = dsample(model)
+        cp.created = 1763600000
+        open(os.path.join(OUT, "dialogs_%s.d8cp" % ver), "wb").write(C.encode(cp, for_radio=True))
+        json.dump({n: cp.stock[n] for n in ST.DIALOGS if cp.stock.get(n)}, open(os.path.join(OUT, "dialogs_%s.json" % ver), "w"), indent=1)
+        RD.save(cp, os.path.join(OUT, "dialogs_%s.rdt" % ver))
+    RD.template_path = old
+    ST.use("D890UV")
+
+
+def mixed_support_map():
+    """schema/cfw_support.json with some keys flipped: a used / stored / n/a mix (Python == JS test of the GUI rules)"""
+    from cps import support as SU
+    d = copy.deepcopy(SU.data())
+    d["sections"]["AMAir"]["D890UV"] = "used"
+    d["sections"]["FM"]["D168UV"] = "n/a"
+    d["keys"]["OptionalSetting"] = {"Beep": {"D890UV": "used", "D168UV": "used"}, "TOT": {"D890UV": "used"},
+                                    "Start_Char": {"D168UV": "n/a"}}
+    d["keys"]["Channel"]["Squelch Mode"] = {"D890UV": "used", "D168UV": "used"}
+    d["keys"]["Channel"]["Reverse"] = {"D890UV": "n/a", "D168UV": "stored"}
+    d["keys"]["APRS"] = {c: {"D890UV": "used", "D168UV": "used"} for c in ST_cols("APRS")}
+    return d
+
+
+def ST_cols(t):
+    from cps import stock as ST
+    return ST.TABLES[t]["columns"]
+
+
+def support_vector():
+    """tests/vectors/cfw_support_view.json: what the GUIs show / hide per model (cps/support.py view == web/js/support.js)"""
+    from cps import stock as ST, support as SU
+    real = SU.data()
+    ST.use("D890UV")
+    mixed = mixed_support_map()
+    views = {}
+    for name, d in (("real", real), ("mixed", mixed)):
+        SU.set_data(d)
+        views[name] = {m: SU.view(m, ST.use(m)) for m in ST.MODELS}
+    SU.set_data(real)
+    ST.use("D890UV")
+    json.dump({"mixed_map": mixed, "views": views}, open(os.path.join(OUT, "cfw_support_view.json"), "w"), indent=1)
 
 
 if __name__ == "__main__":

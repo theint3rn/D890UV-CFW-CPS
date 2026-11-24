@@ -85,7 +85,9 @@ def test_binary_and_json_keep_model():
     assert C.to_dict(cp)["model"] == "D168UV" and "model" not in C.to_dict(sample())
     assert C.encode(sample())[18:20] == b"\0\0"            # D890UV codeplugs unchanged
     radio = C.encode(cp, for_radio=True)
-    assert len(radio) <= C.MODELS["D168UV"]["region"] and "DMRDigitalContactList" not in C.decode(radio).stock
+    assert len(radio) <= C.MODELS["D168UV"]["region"]
+    n = len(cp.stock.get("DMRDigitalContactList", []))       # user database (section 16): every entry fits
+    assert C.LAST_USERDB["dropped"] == 0 and len(C.decode(radio).stock.get("DMRDigitalContactList", [])) == n
 
 
 def test_unknown_model_rejected():
@@ -248,7 +250,7 @@ def test_bluetooth_page():
     assert ST.choice_text("BhtMicGain", "1") == "Level 2" and ST.choice_text("BhtMicGain", "9") == "9"
     assert ST.choice_value("BhtMicGain", "7") == "7" and ST.choice_text("TOT", "3") == "3"
     ST.use("D890UV")                    # D890UV: same page with the stock CSV values (no radio lists)
-    assert "OptionalSetting#Bluetooth" in ST.PAGES and not ST.CHOICES
+    assert "OptionalSetting#Bluetooth" in ST.PAGES and not any(k in ST.CHOICES for k in ST.PAGES["OptionalSetting#Bluetooth"]["keys"])
     assert ["Bluetooth", "OptionalSetting#Bluetooth"] in dict(ST.SCHEMA["tree"])["Common Settings"]
 
 

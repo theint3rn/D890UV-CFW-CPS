@@ -201,6 +201,22 @@ def blank_file(model="D890UV"):
                 segs["E"][len(segs["E"]) - o] = v
             else:
                 segs[seg][o] = v
+    hs = {}
+    for t in ST.dialog_defs().values():
+        for fd in t["fields"]:
+            loc = fd.get(model)
+            if not loc or loc.get("seg") not in ("A", "C", "H", "E"):
+                continue
+            if loc["seg"] == "H":
+                if loc["type"] == "hnum":
+                    hs[loc["off"]] = int(loc["default"])
+                else:
+                    hs[loc["off"]] = loc["default"]
+                continue
+            v = _fld_bytes(loc, loc["default"])
+            if v is None or loc["seg"] == "E":                # tail fields stay zero
+                continue
+            segs[loc["seg"]][loc["off"]:loc["off"] + len(v)] = v
     tg_pre, user_pre = bytearray(L["tg_pre"]), bytearray(L["user_pre"])
     for k, v in B["tg_pre"].items():
         tg_pre[k] = v
@@ -209,7 +225,8 @@ def blank_file(model="D890UV"):
     f = {"version": L["version"], "model": model, "A": bytes(segs["A"]), "line1": "", "password": "", "B": bytes(segs["B"]),
          "line2": "", "C": bytes(segs["C"]), "channels": [], "ids": [], "zones": [], "scans": [], "tg_pre": bytes(tg_pre),
          "tgs": [_default_contact()], "user_pre": bytes(user_pre), "users": [], "sms_pre": bytes(B["sms_pre"]), "sms": [], "fm": [],
-         "rxgroups": [], "tail": bytes(segs["E"])}
+         "rxgroups": [], "tail": bytes(segs["E"][1:] if model == "D168UV" else segs["E"]), "friends": [], "enc": [],
+         "hs": hs}
     if not L["fm_name"]:
         f["fm_vfo"] = dict(FM_VFO)           # D168: the stock CPS refuses a file without the FM VFO record
     return f
@@ -374,14 +391,84 @@ def file_model(d):
     return m if m in LAYOUT else None
 
 
+def _hdr_parse(d):
+    """header segment A (0x00-0x80 when every string in it is empty) holds variable strings: -> (A with them taken out,
+    strings, position after it). 5Tone self ID, information codes, BOT / EOT, DTMF BOT / EOT / kill / stun
+    (docs/STOCK_CPS_MAP.md "Dialogs kept only in the .rdt")"""
+    h = {}
+    a = bytearray(0x81)
+    a[0:0x1C] = d[0:0x1C]
+    a[0x1A] = 0
+    h["t5_self"], p = _cstr(d, 0x1C, 16)
+    a[0x1D:0x28] = d[p:p + 11]
+    p += 11
+    n = d[p]
+    p += 1
+    info = []
+    for _ in range(n):
+        rec = d[p:p + 4]
+        id_, p2 = _cstr(d, p + 4, 16)
+        name, p = _cstr(d, p2, 32)
+        info.append({"idx": rec[0], "func": rec[1], "resp": rec[2], "id": id_, "name": name})
+    h["info"] = info
+    for key in ("bot", "eot"):
+        ln = d[p]
+        p += 1
+        if ln:
+            s, p = _cstr(d, p, 16)
+            h["t5_%s" % key], h["t5_%s_std" % key], h["t5_%s_time" % key] = s, d[p], d[p + 1]
+            p += 2
+        else:
+            h["t5_%s" % key], h["t5_%s_std" % key], h["t5_%s_time" % key] = "", 0, 70
+    if d[p] or d[p + 3]:
+        raise RdtError("header byte 0x2B / 0x2E is not zero: unknown string block in the file header")
+    a[0x2B:0x2F] = d[p:p + 4]
+    p += 4
+    for key in ("bot", "eot", "kill", "stun"):
+        ln = d[p]
+        p += 1
+        if ln:
+            h["dtmf_" + key], p = _cstr(d, p, 16)
+        else:
+            h["dtmf_" + key] = ""
+    a[0x33:0x81] = d[p:p + 0x4E]
+    return bytes(a), h, p + 0x4E
+
+
+def _hdr_write(a, h):
+    """inverse of _hdr_parse"""
+    h = h or {}
+    b = lambda s: s.encode("latin1", "replace") + b"\0"          # noqa: E731
+    out = bytearray(a[0:0x1C])
+    out[0x1A] = len(h.get("t5_self", ""))
+    out += b(h.get("t5_self", ""))
+    out += a[0x1D:0x28]
+    info = h.get("info", [])
+    out.append(len(info))
+    for r in info:
+        out += bytes([r["idx"], r["func"], r["resp"], len(r["id"])]) + b(r["id"]) + b(r["name"])
+    for key in ("bot", "eot"):
+        s = h.get("t5_%s" % key, "")
+        out.append(len(s))
+        if s:
+            out += b(s) + bytes([h.get("t5_%s_std" % key, 0), h.get("t5_%s_time" % key, 70)])
+    out += a[0x2B:0x2F]
+    for key in ("bot", "eot", "kill", "stun"):
+        s = h.get("dtmf_" + key, "")
+        out.append(len(s))
+        if s:
+            out += b(s)
+    out += a[0x33:0x81]
+    return bytes(out)
+
+
 def parse(d):
     model = file_model(d)
     if model is None:
         raise RdtError("not a stock D890UV / D168UV CPS file (model %r)" % d[9:15])
     L = LAYOUT[model]
     f = {"version": d[:5].decode("latin1"), "model": model}
-    p = 0x81
-    f["A"] = d[:p]
+    f["A"], f["hs"], p = _hdr_parse(d)
     f["line1"], p = _cstr(d, p, 16)
     f["password"], p = _cstr(d, p, 8)
     f["B"], p = d[p:p + 11], p + 11
@@ -459,9 +546,13 @@ def parse(d):
         end = p + 4 + (d[p + 1] | d[p + 2] << 8 | d[p + 3] << 16)
         p += k
         f["users"], p = _records(d, p, None, end)
-    f["sms_pre"] = d[p:p + 3]
-    n = d[p + 3]
-    p += 4
+    f["sms_pre"] = d[p:p + 1] + b"\0\0"
+    n = d[p + 1] | d[p + 2] << 8                         # Friends List: u16 count, u24 index into the digital contact list
+    p += 3
+    f["friends"] = [d[p + 3 * i] | d[p + 3 * i + 1] << 8 | d[p + 3 * i + 2] << 16 for i in range(n)]
+    p += 3 * n
+    n = d[p]
+    p += 1
     sms = []
     for i in range(n):
         if d[p] != i:
@@ -494,6 +585,11 @@ def parse(d):
         p += 1 + 2 * m
     f["rxgroups"] = rg
     f["tail"] = d[p:]
+    f["enc"] = []
+    if model == "D168UV":                    # Encryption Code: u8 count, {u8 row (0-based), u16 key, u16 ID} at the start of the tail
+        n = f["tail"][0]
+        f["enc"] = [(f["tail"][1 + 5 * i], struct.unpack_from("<HH", f["tail"], 2 + 5 * i)) for i in range(n)]
+        f["tail"] = f["tail"][1 + 5 * n:]
     return f
 
 
@@ -530,7 +626,7 @@ def _same_record(r):
 
 def serialise(f):
     L = LAYOUT[f.get("model", "D890UV")]
-    b = bytearray(f["A"])
+    b = bytearray(_hdr_write(f["A"], f.get("hs")))
     b += _wcstr(f["line1"], 16) + _wcstr(f["password"], 8) + f["B"] + _wcstr(f["line2"], 16) + f["C"]
     b += struct.pack("<H", len(f["channels"]))
     for c in f["channels"]:
@@ -566,7 +662,9 @@ def serialise(f):
     sp = bytearray(f["sms_pre"])
     if sp[0] in (0, 1):
         sp[0] = 0 if f["users"] else 1                # as the stock CPS writes it (1 = empty user database)
-    b += sp + bytes([len(f["sms"])])
+    fr = f.get("friends", [])
+    sp[1:3] = struct.pack("<H", len(fr))
+    b += sp + b"".join(struct.pack("<I", i)[:3] for i in fr) + bytes([len(f["sms"])])
     for i, t in enumerate(f["sms"]):
         b += bytes([i]) + _wcstr(t, 200)
     fm = list(f["fm"]) + ([f["fm_vfo"]] if f.get("fm_vfo") else [])
@@ -576,6 +674,11 @@ def serialise(f):
     b.append(len(f["rxgroups"]))
     for i, g in enumerate(f["rxgroups"]):
         b += bytes([i]) + _wcstr(g["name"], 16) + bytes([len(g["members"])]) + struct.pack("<%dH" % len(g["members"]), *g["members"])
+    if f.get("model") == "D168UV":
+        enc = f.get("enc", [])
+        b.append(len(enc))
+        for row, (key, ident) in enc:
+            b += bytes([row]) + struct.pack("<HH", key, ident)
     b += f["tail"]
     struct.pack_into("<I", b, 5, len(b) - 14)      # header: file length - 14 (the stock CPS refuses a file without it)
     return bytes(b)
@@ -677,6 +780,139 @@ def _tone_bytes(text, custom):
     return None
 
 
+# ------------------------------------------------------------------ .rdt-only dialogs (schema/rdt_dialogs.json)
+
+def _e_pos(f, dist):
+    """position in the tail of a byte `dist` before the end of the reference file. D890UV: the variable NX alias string
+    sits after these bytes, so its length is added."""
+    extra = 0
+    if f["model"] == "D890UV":
+        loc = _nx_find(f["tail"])
+        extra = loc[1] if loc else 0
+    return len(f["tail"]) - dist - extra
+
+
+def _fld_get(f, loc):
+    """raw value of a dialog field -> text"""
+    typ, seg, off = loc["type"], loc["seg"], loc["off"]
+    if seg == "H":
+        return str((f.get("hs") or {}).get(off, loc["default"]))
+    b = f["tail"] if seg == "E" else f[seg]
+    p = _e_pos(f, off) if seg == "E" else off
+    if p < 0 or p >= len(b):
+        return loc["default"]
+    if typ == "u8":
+        return str(b[p])
+    if typ in ("u16", "chan", "hex3", "hex4"):
+        v = struct.unpack_from("<H", b, p)[0]
+        return str(v + 1) if typ == "chan" else "%03X" % v if typ == "hex3" else "%04X" % v if typ == "hex4" else str(v)
+    if typ == "u32":
+        return str(struct.unpack_from("<I", b, p)[0])
+    if typ == "str3":
+        return b[p:p + 3].split(b"\0")[0].decode("latin1")
+    raise RdtError("dialog field type %r" % typ)
+
+
+def _fld_bytes(loc, text):
+    """text -> raw bytes (None = not a valid value: the byte stays as it is)"""
+    typ, t = loc["type"], text.strip()
+    if typ == "str3":
+        return t.encode("latin1", "replace")[:3].ljust(3, b"\0")
+    try:
+        if typ == "u8":
+            v = int(t)
+            return bytes([v]) if 0 <= v <= 255 else None
+        if typ in ("hex3", "hex4"):
+            v = int(t, 16)
+        elif typ == "chan":
+            v = int(t) - 1
+        else:
+            v = int(t)
+    except ValueError:
+        return None
+    if typ == "u32":
+        return struct.pack("<I", v) if 0 <= v < 1 << 32 else None
+    return struct.pack("<H", v) if 0 <= v < 65536 else None
+
+
+def dialog_rows(f):
+    """{dialog table: rows} of a parsed file (schema/rdt_dialogs.json)"""
+    model = f["model"]
+    out = {}
+    for name, t in ST.DIALOGS.items():
+        if t["kind"] == "record":
+            out[name] = [[_fld_get(f, fd[model]) if model in fd else "" for fd in t["fields"]]]
+    hs = f.get("hs") or {}
+    if "T5InfoCodes" in ST.DIALOGS:
+        out["T5InfoCodes"] = [[str(r["idx"]), str(r["func"]), str(r["resp"]), r["id"]] for r in hs.get("info", [])]
+    if "FriendsList" in ST.DIALOGS:
+        ids = [r["id"] for r in f["users"]]
+        out["FriendsList"] = [[str(i + 1), str(ids[k])] for i, k in enumerate(f.get("friends", [])) if k < len(ids)]
+    if "EncryptionCodeRdt" in ST.DIALOGS:
+        out["EncryptionCodeRdt"] = [[str(row + 1), "%04X" % key, str(ident)] for row, (key, ident) in f.get("enc", [])]
+    return out
+
+
+def _dialog_write(f, base, cp):
+    """write the dialog tables of cp.stock into the parsed file f (only fields that differ from the base file)"""
+    model = f["model"]
+    old = dialog_rows(dict(base, model=model))
+    hs = copy.deepcopy(base.get("hs") or {})
+    for name, t in ST.DIALOGS.items():
+        rows = cp.stock.get(name)
+        if not rows or t["kind"] != "record":
+            continue
+        for fd, val, prev in zip(t["fields"], rows[0], old[name][0]):
+            loc = fd.get(model)
+            if loc is None or val == prev:
+                continue
+            if loc["seg"] == "H":
+                if loc["type"] == "hnum":
+                    try:
+                        hs[loc["off"]] = int(val) & 0xFF
+                    except ValueError:
+                        pass
+                else:
+                    hs[loc["off"]] = val[:16]
+                continue
+            b = _fld_bytes(loc, val)
+            if b is None:
+                continue
+            seg = "tail" if loc["seg"] == "E" else loc["seg"]
+            buf = bytearray(f[seg])
+            p = _e_pos(f, loc["off"]) if loc["seg"] == "E" else loc["off"]
+            if 0 <= p and p + len(b) <= len(buf):
+                buf[p:p + len(b)] = b
+                f[seg] = bytes(buf)
+    rows = cp.stock.get("T5InfoCodes")
+    if rows is not None and "T5InfoCodes" in ST.DIALOGS:
+        names = {r["idx"]: r["name"] for r in hs.get("info", [])}        # the string after the ID is not decoded: kept
+        num = lambda t: int(t) & 255 if t.strip().isdigit() else 0          # noqa: E731
+        hs["info"] = [{"idx": num(r[0]), "func": num(r[1]), "resp": num(r[2]), "id": r[3][:16], "name": names.get(num(r[0]), "")}
+                      for r in rows if len(r) > 3 and r[0].strip().isdigit()]
+    f["hs"] = hs
+    rows = cp.stock.get("EncryptionCodeRdt")
+    if rows is not None and "EncryptionCodeRdt" in ST.DIALOGS:
+        enc = []
+        for r in rows:
+            try:
+                enc.append((int(r[0]) - 1, (int(r[1], 16) & 0xFFFF, int(r[2] or "65535") & 0xFFFF)))
+            except (ValueError, IndexError):
+                continue
+        f["enc"] = sorted(enc)
+
+
+def _friends_write(f, cp):
+    """Friends List rows (DMR IDs) -> indexes into the digital contact list; returns the IDs that are not in it"""
+    rows = cp.stock.get("FriendsList")
+    if rows is None or "FriendsList" not in ST.DIALOGS:
+        return []
+    idx = {r["id"]: i for i, r in reversed(list(enumerate(f["users"])))}
+    want = [int(r[1]) for r in rows if len(r) > 1 and r[1].strip().isdigit()]
+    f["friends"] = sorted({idx[i] for i in want if i in idx})              # the stock CPS keeps them in list order
+    return [i for i in want if i not in idx]
+
+
 def tables_from_file(f):
     """parsed file -> {table: rows} for the decoded tables (others: stock defaults)."""
     model = f.get("model", "D890UV")
@@ -768,6 +1004,9 @@ def tables_from_file(f):
             else:
                 opt[0][cols.index(k)] = str(f[seg][o])
     t["OptionalSetting"] = opt
+    for name, rows in dialog_rows(f).items():
+        if rows != ST.default_rows(name):              # dialogs at their defaults are not stored
+            t[name] = rows
     if model == "D890UV":
         nx = nx_row(f["tail"])
         if nx is not None:
@@ -998,6 +1237,12 @@ def build_file(cp, template=None):
                   "type": (r.get("type", 0) & ~0x30) | CALLTYPE_R.get(row[8], 0)})
         users.append(r)
     f["users"] = users
+    _dialog_write(f, base, cp)
+    if cp.stock.get("FriendsList") is None:            # keep the friends the file had (indexes into the new contact list)
+        idx = {r["id"]: i for i, r in reversed(list(enumerate(users)))}
+        f["friends"] = sorted({idx[base["users"][k]["id"]] for k in base.get("friends", []) if k < len(base["users"]) and base["users"][k]["id"] in idx})
+    else:
+        f["_lost_friends"] = _friends_write(f, cp)
     return f
 
 
@@ -1031,7 +1276,10 @@ def save(cp, path):
     """write a stock D890UV / D168UV .rdt (the codeplug's model); returns the list of stock tables whose edits could not be written (see module doc)"""
     f = build_file(cp)
     open(path, "wb").write(serialise(f))
-    return unsaved_tail_edits(cp)
+    out = unsaved_tail_edits(cp)
+    if f.get("_lost_friends"):
+        out.append("FriendsList (not in the digital contact list: %s)" % ", ".join(map(str, f["_lost_friends"][:8])))
+    return out
 
 
 def tail_tables():

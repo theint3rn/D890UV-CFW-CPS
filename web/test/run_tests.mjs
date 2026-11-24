@@ -7,6 +7,7 @@ import { importRdt, importCsv, exportCsv } from "../js/importers.js";
 import { FakeRadio, Radio } from "../js/link.js";
 import * as ST from "../js/stock.js";
 import * as R3 from "../js/rdt.js";
+import * as SU from "../js/support.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const VEC = join(HERE, "..", "..", "tests", "vectors");
@@ -16,6 +17,7 @@ const PVEC = join(PRIV, "vectors"), TPL = (n) => join(process.env.CFW_CPS_RDT_DI
 const RDT = process.env.CFW_CPS_D878_RDT || join(PRIV, "d878.rdt");
 const SCH = (n) => join(HERE, "..", "schema", n);
 const readIf = (p) => existsSync(p) ? new Uint8Array(readFileSync(p)) : null;
+ST.setDialogs(JSON.parse(readFileSync(SCH("rdt_dialogs.json"), "utf8")));
 ST.setSchema(JSON.parse(readFileSync(SCH("stock_d168uv.json"), "utf8")));
 ST.setSchema(JSON.parse(readFileSync(SCH("stock_d890uv.json"), "utf8")));          // the last one set is selected
 R3.setDefaults(readIf(TPL("new_v1323.rdt")), JSON.parse(readFileSync(SCH("rdt_map.json"), "utf8")));
@@ -32,17 +34,18 @@ function sortKeys(x) {
   return x;
 }
 
-for (const [dir, name] of [[VEC, "sample"], [VEC, "minimal"], [VEC, "bad"], [VEC, "synth"], [PVEC, "d878"], [VEC, "digital"], [VEC, "digital_d168"]]) {
+for (const [dir, name] of [[VEC, "sample"], [VEC, "minimal"], [VEC, "bad"], [VEC, "synth"], [PVEC, "d878"], [VEC, "digital"], [VEC, "digital_d168"], [VEC, "userdb"]]) {
   if (!existsSync(join(dir, name + ".d8cp"))) { skip(name); continue; }
   const bin = new Uint8Array(readFileSync(join(dir, name + ".d8cp")));
   const js = JSON.parse(readFileSync(join(dir, name + ".json"), "utf8"));
   const dec = C.decode(bin);
   const pydec = JSON.parse(readFileSync(join(dir, name + ".decoded.json"), "utf8"));
   ok(deep(dec, pydec), `${name}: decode(.d8cp) == Python decode`);
-  if (name !== "bad") ok(deep(dec, js), `${name}: decode(.d8cp) == source JSON`);
+  if (name !== "bad" && name !== "userdb") ok(deep(dec, js), `${name}: decode(.d8cp) == source JSON`);   // userdb: lossy (8/12 chars)
   const enc = C.encode(C.fromDict(js));
   ok(eqBytes(enc, bin), `${name}: encode(JSON) == Python bytes (first diff at ${firstDiff(enc, bin)})`);
   ok(eqBytes(C.encode(dec), bin), `${name}: encode(decode(b)) == b`);
+  if (name === "userdb") { C.encode(C.fromDict(js)); ok(C.LAST_USERDB.written === 22 && C.LAST_USERDB.dropped === 0, "userdb: 20 DMR + 2 NXDN entries"); }
   const iss = C.validate(C.fromDict(js));
   const want = JSON.parse(readFileSync(join(dir, name + ".issues.json"), "utf8"));
   ok(deep(iss, want), `${name}: validation issues identical (${iss.length} vs ${want.length})`);
@@ -245,5 +248,38 @@ for (const [model, ver, syn] of [["D890UV", "v1323", "synth"], ["D168UV", "v1292
   if (tpl) R3.setTemplate(tpl, model);
 }
 ST.use("D890UV");
+// cfw support map (schema/cfw_support.json): the GUI decisions == Python (tests/test_support.py, vectors/cfw_support_view.json)
+{
+  const real = JSON.parse(readFileSync(SCH("cfw_support.json"), "utf8"));
+  const v = JSON.parse(readFileSync(join(VEC, "cfw_support_view.json"), "utf8"));
+  ok(readFileSync(SCH("cfw_support.json"), "utf8") === readFileSync(join(HERE, "..", "..", "schema", "cfw_support.json"), "utf8"), "web/schema/cfw_support.json == schema/");
+  for (const [name, d] of [["real", real], ["mixed", v.mixed_map]]) {
+    SU.setData(d);
+    for (const m of ST.MODELS) ok(deep(SU.view(m, ST.schemaOf(m)), v.views[name][m]), `cfw support view ${name} ${m} == Python`);
+  }
+  SU.setData(real);
+  ok(SU.section("AMAir", "D168UV") === "n/a" && SU.section("AMAir", "D890UV") === "used", "AM Air: D890UV used, D168UV n/a");
+}
+// .rdt-only dialogs (schema/rdt_dialogs.json, tests/test_dialogs.py): .rdt and radio codeplug == Python
+for (const [model, ver] of [["D890UV", "v1323"], ["D168UV", "v1292"]]) {
+  R3.clearTemplate(model);
+  ST.use(model);
+  const bytes = new Uint8Array(readFileSync(join(VEC, `dialogs_${ver}.rdt`))), rows = JSON.parse(readFileSync(join(VEC, `dialogs_${ver}.json`), "utf8"));
+  const cp = R3.load(bytes), got = Object.fromEntries(Object.keys(rows).map((n) => [n, cp.stock[n]]));
+  ok(deep(got, rows), `${model} dialogs read from the .rdt == Python rows`);
+  ok(eqBytes(R3.save(cp).bytes, bytes), `${model} dialogs .rdt load + save byte-identical`);
+  const rad = new Uint8Array(readFileSync(join(VEC, `dialogs_${ver}.d8cp`))), dec = C.decode(rad), d2 = Object.fromEntries(Object.keys(rows).map((n) => [n, dec.stock[n]]));
+  ok(deep(d2, rows), `${model} dialogs in the radio codeplug == Python rows`);
+  const o = C.encode(dec, true);
+  ok(eqBytes(o, rad), `${model} dialogs radio codeplug re-encoded == Python bytes (first diff ${firstDiff(o, rad)})`);
+  const base = C.decode(new Uint8Array(readFileSync(join(HERE, "..", "..", "examples", model === "D890UV" ? "synth.d8cp" : "synth_d168.d8cp"))));
+  for (const [n, r] of Object.entries(rows)) base.stock[n] = r;
+  ok(eqBytes(R3.save(base).bytes, bytes), `${model} dialogs written to a .rdt == Python bytes`);
+}
+ST.use("D890UV");
+// web CPS default model (app.js defaultModel): ?model=, else a d168 site path, else D890UV
+for (const [q, path, want] of [["", "/", "D890UV"], ["?model=D168UV", "/", "D168UV"], ["?model=d168uv", "/", "D168UV"],
+  ["", "/D168UV-CFW-CPS/", "D168UV"], ["?model=D890UV", "/d168/", "D890UV"], ["?model=bogus", "/", "D890UV"], ["?model=bogus", "/d168-cps/index.html", "D168UV"]])
+  ok(C.modelFromUrl(q, path) === want, `modelFromUrl(${q}, ${path}) == ${want}`);
 console.log(`${pass} passed, ${fail} failed${skipped ? `, ${skipped} skipped (stock CPS files not present)` : ""}`);
 process.exit(fail ? 1 : 0);

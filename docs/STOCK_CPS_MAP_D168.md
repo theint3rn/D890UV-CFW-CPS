@@ -85,39 +85,44 @@ firmware / icon / boot image / satellite update or radio recording (codeplug onl
 | Public | Channel | Channel | 179 | channels |
 | Public | Zone | Zone | 12 | zones |
 | Public | Scan List | ScanList | 6 | scan lists |
-| Public | Roaming Channel | RoamingChannel | 8 | stored, not used by cfw yet |
-| Public | Roaming Zone | RoamingZone | 2 | stored, not used by cfw yet |
-| Public | FM | FM | 12 | stored, not used by cfw yet |
-| Public | Auto Repeater Offset Frequencies | AutoRepeaterOffsetFrequencys | 0 | stored, not used by cfw yet |
-| Public | Device Information | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Public | Optional Setting | OptionalSetting | 1 | stored, not used by cfw yet |
-| Public | Bluetooth (cfw) | OptionalSetting (8 keys) | | cfw page, stored, not used by cfw yet |
-| Public | Alarm Setting | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Public | Local Information | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Public | Hot Key | HotKey_HotKey | 18 | stored, not used by cfw yet |
-| Public | Hot Key Quick Call | HotKey_QuickCall | 4 | stored, not used by cfw yet |
+| Public | Roaming Channel | RoamingChannel | 8 | used by cfw |
+| Public | Roaming Zone | RoamingZone | 2 | used by cfw |
+| Public | FM | FM | 12 | used by cfw |
+| Public | Auto Repeater Offset Frequencies | AutoRepeaterOffsetFrequencys | 0 | used by cfw |
+| Public | Device Information | (dialog, .rdt only) |  | used by cfw |
+| Public | Optional Setting | OptionalSetting | 1 | partly used by cfw (130 of 195 keys stored, not used yet) |
+| Public | Bluetooth (cfw) | OptionalSetting (8 keys) | | cfw page, partly used by cfw (5 of 8 keys stored, not used yet) |
+| Public | Alarm Setting | (dialog, .rdt only) |  | partly used by cfw (4 of 25 keys stored, not used yet) |
+| Public | Hot Key | HotKey_HotKey | 18 | used by cfw |
+| Public | Hot Key Quick Call | HotKey_QuickCall | 4 | used by cfw |
 | Public | Hot Key State | HotKey_State | 0 | stored, not used by cfw yet |
-| Public | Alert Tone | AlertTone | 1 | stored, not used by cfw yet |
-| Public | APRS | APRS | 1 | stored, not used by cfw yet |
-| Public | GPS Roaming | GPSRoaming | 32 | stored, not used by cfw yet |
+| Public | Alert Tone | AlertTone | 1 | used by cfw |
+| Public | APRS | APRS | 1 | partly used by cfw (213 of 232 keys stored, not used yet) |
+| Public | GPS Roaming | GPSRoaming | 32 | used by cfw |
 | Digital | Master ID | (dialog, .rdt only) |  | Radio Settings |
-| Digital | Radio ID List | RadioIDList | 1 | stored, not used by cfw yet |
+| Digital | Radio ID List | RadioIDList | 1 | used by cfw |
 | Digital | Contact/Talk Groups | TalkGroups | 22 | contacts |
-| Digital | Prefabricated SMS | PrefabricatedSMS | 5 | stored, not used by cfw yet |
+| Digital | Prefabricated SMS | PrefabricatedSMS | 5 | used by cfw |
 | Digital | Receive Group Call List | ReceiveGroupCallList | 3 | TG lists |
-| Digital | Encryption Code | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Digital | AES Encryption Code | AESEncryptionCode | 0 | stored, not used by cfw yet |
-| Digital | ARC4 Encryption Code | ARC4EncryptionCode | 0 | stored, not used by cfw yet |
-| Digital | Digital Contact List | DigitalContactList | 200 | stored, not used by cfw yet |
-| Digital | Friends List | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Digital | Talk Alias | (dialog, .rdt only) |  | stored, not used by cfw yet |
-| Analog | Analog Address Book | AnalogAddressBook | 0 | stored, not used by cfw yet |
-| Analog | QDC Address Book | QDC1200AddressBook | 0 | stored, not used by cfw yet |
-| Analog | QDC1200 Setting | QDC1200EnCodeTable | 0 | stored, not used by cfw yet |
-| Analog | QDC1200 Decode | QDC1200DECodeTable | 1 | stored, not used by cfw yet |
-| Analog | 5Tone Setting | 5ToneEncode | 0 | stored, not used by cfw yet |
-| Analog | 2Tone Setting | 2ToneEncode | 0 | stored, not used by cfw yet |
-| Analog | DTMF Setting | DTMFEncode | 0 | stored, not used by cfw yet |
+| Digital | Encryption Code | (dialog, .rdt only) |  | used by cfw |
+| Digital | AES Encryption Code | AESEncryptionCode | 0 | used by cfw |
+| Digital | ARC4 Encryption Code | ARC4EncryptionCode | 0 | used by cfw |
+| Digital | Digital Contact List | DigitalContactList | 200 | used by cfw |
+| Digital | Friends List | (dialog, .rdt only) |  | used by cfw |
+| Digital | Talk Alias | (dialog, .rdt only) |  | partly used by cfw (1 of 2 keys stored, not used yet) |
+| Analog | Analog Address Book | AnalogAddressBook | 0 | used by cfw |
+| Analog | QDC Address Book | QDC1200AddressBook | 0 | used by cfw |
+| Analog | QDC1200 Setting | QDC1200EnCodeTable | 0 | used by cfw |
+| Analog | QDC1200 Decode | QDC1200DECodeTable | 1 | partly used by cfw (5 of 7 keys stored, not used yet) |
+| Analog | 5Tone Setting | 5ToneEncode | 0 | used by cfw |
+| Analog | 5Tone Information Codes | T5InfoCodes | 0 | used by cfw |
+| Analog | 5Tone Settings | T5Setting | 0 | partly used by cfw (6 of 20 keys stored, not used yet) |
+| Analog | 2Tone Setting | 2ToneEncode | 0 | used by cfw |
+| Analog | 2Tone Settings | T2Setting | 0 | partly used by cfw (2 of 6 keys stored, not used yet) |
+| Analog | DTMF Setting | DTMFEncode | 0 | used by cfw |
+| Analog | DTMF Settings | DTMFSetting | 0 | partly used by cfw (6 of 17 keys stored, not used yet) |
+
+cfw column: schema/cfw_support.json (tools/make_cfw_support.py). Hidden on this radio (n/a): AM Air, AM Zone, Digital Contact Whitelist (Repeater), Encryption Code, Local Information, MDC1200 Address Book, MDC1200 Encode, NX Digital Contact List, NX Encryption Code, NX Receive Group Call List, NX Setting, NX State Message, NX Talk Group, Talk Group Whitelist (Repeater).
 
 cfw adds: Tier III Systems (Digital) and a *cfw Digital Modes* section (Radio Settings, Trunk Systems with P25 band plans, Encryption Keys, D-STAR Repeaters, D-STAR / YSF / registration settings).
 
@@ -454,6 +459,131 @@ stock CPS has no field for any of them. `MicInBlueTooth` (+0xB2) and `BhtPttHold
 reach the settings block but no BT menu shows them (+0x15 does not change PTT HOLD, which the crawl had guessed): raw
 values.
 
+## Dialogs kept only in the .rdt
+
+Measured in the stock CPS: change one field in the dialog, OK, save, diff; and the other way round, change one byte of the file and look which dialog field moves (tools/make_rdt_dialogs.py). The cfw CPS edits them as ordinary pages and stores them in the codeplug (section 10 tables 64+, docs/CODEPLUG.md). Offsets: A / C = header segments (cps/rdt.py LAYOUT, A with its variable strings taken out), E = bytes before the end of the tail, H = variable header string, list = own record list.
+
+### Alarm Setting (table 64, record)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | Analog Emergency Alarm | C+0x33 u8 | 0 | 0 Alarm, 1 Transpond+Background, 2 Transpond+Alarm, 3 Both |
+| 1 | Analog ENI Type | C+0x34 u8 | 0 |  |
+| 2 | Analog Alarm Time [s] | C+0x36 u8 | 20 |  |
+| 3 | Analog Duration of TX [s] | C+0x37 u8 | 31 |  |
+| 4 | Analog Duration of RX [s] | C+0x38 u8 | 31 |  |
+| 5 | Analog Emergency Channel | C+0x39 chan | 1 |  |
+| 6 | Analog ENI Send Select | C+0x3B u8 | 0 | 0 Assigned Channel, 1 Selected Channel |
+| 7 | Analog Emergency Cycle (0 = Continuous) | C+0x3C u8 | 0 |  |
+| 8 | Digital Emergency Alarm | C+0x3D u8 | 0 | 0 Alarm, 1 Transpond+Background, 2 Transpond+NoLocalAlarm, 3 Transpond+LocalAlarm |
+| 9 | Digital Emergency Channel | C+0x3E chan | 1 |  |
+| 10 | Digital Alarm Time [s] | C+0x40 u8 | 20 |  |
+| 11 | Digital Duration of TX [s] | C+0x41 u8 | 31 |  |
+| 12 | Digital Duration of RX [s] | C+0x42 u8 | 31 |  |
+| 13 | Digital ENI Send Select | C+0x43 u8 | 0 | 0 Assigned Channel, 1 Selected Channel |
+| 14 | Digital Emergency Cycle (0 = Continuous) | C+0x44 u8 | 0 |  |
+| 15 | Digital TG/DMR ID | C+0x4A u32 | 0 |  |
+| 16 | Digital Call Type | C+0x49 u8 | 0 | 0 Private Call, 1 Group Call, 2 All Call |
+| 17 | Receive Alarm | C+0x48 u8 | 0 | 0 Off, 1 On |
+| 18 | QDC1200 Kind | C+0x4E u8 | 0 | 0 Private Call, 1 Group Call, 2 All Call |
+| 19 | QDC1200 Group ID | C+0x4F hex3 | 000 |  |
+| 20 | QDC1200 Private ID | C+0x51 hex4 | 0000 |  |
+| 21 | Analog alarm signaling type | C+0x53 u8 | 0 | 0 None, 1 DTMF, 2 5TONE, 3 MDC1200 |
+| 22 | Work Alone Response Time (0 = 1 min) | C+0x45 u8 | 0 |  |
+| 23 | Work Alone Warning Time (0 = 1 s) | C+0x46 u8 | 0 |  |
+| 24 | Work Alone Response | C+0x47 u8 | 0 | 0 Key, 1 Voice Transmit |
+
+### DTMF Settings (table 65, record)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | DTMF Transmitting Time | A+0x3F u8 | 1 | 0 50 ms, 1 100 ms, 2 200 ms, 3 300 ms, 4 500 ms |
+| 1 | DTMF Self ID (3 digits; the stock CPS shows letters blank) | A+0x39 str3 | 000 |  |
+| 2 | DTMF Interval Character (10 A, 11 B, 12 C, 13 D, 14 *, 15 #) | A+0x33 u8 | 14 |  |
+| 3 | Group Code (0 Off, 10 A .. 13 D, 14 *, 15 #) | A+0x34 u8 | 0 |  |
+| 4 | Decoding Response | A+0x35 u8 | 0 | 0 None, 1 Beep Tone, 2 Beep Tone & Respond |
+| 5 | First Digit Time (x 10 ms) | A+0x37 u8 | 20 |  |
+| 6 | Pretime (x 10 ms) | A+0x36 u8 | 20 |  |
+| 7 | Auto Reset Time (D890UV: s, D168UV: 0.1 s) | A+0x38 u8 | 0 |  |
+| 8 | Time-Lapse After Encode (x 10 ms) | A+0x3D u8 | 20 |  |
+| 9 | PTT ID Pause Time (raw) | A+0x3E u8 | 0 |  |
+| 10 | D Code Pause (s, 0 = Off) | A+0x41 u8 | 10 |  |
+| 11 | Side Tone | A+0x3C u8 | 0 | 0 Off, 1 On |
+| 12 | PTT ID | A+0x40 u8 | 0 | 0 Off, 1 On |
+| 13 | PTT ID Starting (BOT) | H dtmf_bot hstr |  |  |
+| 14 | PTT ID Ending (EOT) | H dtmf_eot hstr |  |  |
+| 15 | Remotely Kill | H dtmf_kill hstr |  |  |
+| 16 | Remotely Stun | H dtmf_stun hstr |  |  |
+
+### 2Tone Settings (table 66, record)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | 1st Tone Duration (x 0.1 s) | A+0x42 u8 | 5 |  |
+| 1 | 2nd Tone Duration (x 0.1 s) | A+0x43 u8 | 5 |  |
+| 2 | Long Tone Duration (x 0.1 s) | A+0x44 u8 | 10 |  |
+| 3 | Gap Time (x 100 ms) | A+0x45 u8 | 0 |  |
+| 4 | Auto Reset Time (D890UV: s, D168UV: 0.1 s) | A+0x46 u8 | 0 |  |
+| 5 | Side Tone | A+0x47 u8 | 0 | 0 Off, 1 On |
+
+### 5Tone Settings (table 67, record)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | Self ID | H t5_self hstr |  |  |
+| 1 | Decode Standard | A+0x19 u8 | 0 |  |
+| 2 | Decoding Response | A+0x18 u8 | 0 | 0 None, 1 Beep Tone, 2 Beep Tone & Respond |
+| 3 | Time Of Decode Tone [ms] | A+0x1B u8 | 70 |  |
+| 4 | Decode Time (x 10 ms) | A+0x26 u8 | 2 |  |
+| 5 | 5TONE Dec Units (bit mask, bit 0 = unit 1) | A+0x2C u8 | 0 |  |
+| 6 | Disp AnyID | A+0x2D u8 | 0 | 0 Off, 1 On |
+| 7 | Pretime (x 10 ms) | A+0x1D u8 | 20 |  |
+| 8 | Time-Lapse After Encode (x 10 ms) | A+0x1E u8 | 20 |  |
+| 9 | PTT ID Pause Time [s] (0 = Off) | A+0x1F u8 | 10 |  |
+| 10 | Auto Reset Time [s] | A+0x20 u8 | 0 |  |
+| 11 | First Delay (x 10 ms) | A+0x21 u8 | 20 |  |
+| 12 | Side Tone | A+0x22 u8 | 0 | 0 Off, 1 On |
+| 13 | First Delay Time After Stop (x 10 ms) | A+0x27 u8 | 0 |  |
+| 14 | PTT ID Starting (BOT): Encode ID | H t5_bot hstr |  |  |
+| 15 | PTT ID Starting (BOT): standard (index) | H t5_bot_std hnum | 0 |  |
+| 16 | PTT ID Starting (BOT): tone time [ms] | H t5_bot_time hnum | 70 |  |
+| 17 | PTT ID Ending (EOT): Encode ID | H t5_eot hstr |  |  |
+| 18 | PTT ID Ending (EOT): standard (index) | H t5_eot_std hnum | 0 |  |
+| 19 | PTT ID Ending (EOT): tone time [ms] | H t5_eot_time hnum | 70 |  |
+
+### 5Tone Information Codes (table 68, list)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | No. | list |  |  |
+| 1 | Function Option (index) | list |  |  |
+| 2 | Decoding Response (index) | list |  |  |
+| 3 | Information ID | list |  |  |
+
+### Talk Alias / AIR Alias (table 70, record)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | Talker Alias Type | E 23248 u8 | 0 | 0 Radio Alias, 1 Custom Text |
+| 1 | Alias Display Priority | E 23247 u8 | 0 | 0 No Display, 1 Contact Alias, 2 Air Alias |
+
+### Friends List (table 71, list)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | No. | list |  |  |
+| 1 | DMR ID | list |  |  |
+
+### Encryption Code (basic privacy) (table 72, list)
+
+| # | Field | Where | Default | Values |
+|---|---|---|---|---|
+| 0 | No. | list |  |  |
+| 1 | Encryption KEY (hex) | list |  |  |
+| 2 | Encryption ID | list |  |  |
+
+Not decoded: Alarm Setting > Analog > Emergency ID (list content depends on the signalling tables); Alarm Setting > ENI Type list texts (the value is stored raw); 5Tone Setting: Stop Code, Stop Time (header bytes 0x23-0x25 are not tied to one field); the Function Name of an information code (the string after the ID is kept as it is); 2Tone Setting > Decode tab; DTMF Setting > Special Call; Encode ID tables (CSV); Talk Alias > Custom Text: the V1.07 dialog shows no text field when it is chosen; where (or if) a text is kept is not known; QDC1200 Setting: Max ACK wait, Sync headers, Pretime, Try times, Side Tone; Local Information: the stock CPS opens the COM port for it; it is live radio data, not in the .rdt.
+
 ## Tables (stock CSV columns, in order)
 
 ### Channel (list, LST index 0)
@@ -471,56 +601,56 @@ values.
 | 8 | CTCSS/DCS Encode | Off | Off, 67.0, 88.5, 100.0 (+9 more) | cfw field .rdt 0xC8, 0x101, 0x102 |
 | 9 | Contact/Talk Group | Contact 1 | Contact 1, World, Local, Region (+8 more) | cfw field |
 | 10 | Contact/Talk Group Call Type | Group Call | Group Call, Private Call | cfw field |
-| 11 | Radio ID |  | '' |  .rdt 0xC8 |
-| 12 | Busy Lock/TX Permit | Always | Always, Off, Channel Free |  .rdt 0xC8 |
-| 13 | Squelch Mode | Carrier | Carrier, CTCSS/DCS |  .rdt 0x10C |
-| 14 | Optional Signal | Off | Off, DTMF |  .rdt 0xC8 |
-| 15 | DTMF ID | 1 | 1 |  .rdt 0xC8 |
-| 16 | 2Tone ID | 1 | 1 |  .rdt 0xC8 |
-| 17 | 5Tone ID | 1 | 1 |  .rdt 0xC8 |
-| 18 | PTT ID | Off | Off |  .rdt 0xC8 |
+| 11 | Radio ID |  | '' | used by cfw .rdt 0xC8 |
+| 12 | Busy Lock/TX Permit | Always | Always, Off, Channel Free | used by cfw .rdt 0xC8 |
+| 13 | Squelch Mode | Carrier | Carrier, CTCSS/DCS | used by cfw .rdt 0x10C |
+| 14 | Optional Signal | Off | Off, DTMF | used by cfw .rdt 0xC8 |
+| 15 | DTMF ID | 1 | 1 | used by cfw .rdt 0xC8 |
+| 16 | 2Tone ID | 1 | 1 | used by cfw .rdt 0xC8 |
+| 17 | 5Tone ID | 1 | 1 | used by cfw .rdt 0xC8 |
+| 18 | PTT ID | Off | Off | used by cfw .rdt 0xC8 |
 | 19 | RX Color Code | 1 | 1, 0, 2, 3 (+5 more) | cfw field .rdt 0xC8, 0x113 |
 | 20 | Slot | 1 | 1, 2 | cfw field .rdt 0xC8 |
 | 21 | Scan List | None | None, FM Simplex, FM Rpt | cfw field .rdt 0x114 |
 | 22 | Receive Group List | None | None, Local+Region, Wide, Nets | cfw field .rdt 0xC8 |
-| 23 | PTT Prohibit | Off | Off |  .rdt 0xFA |
-| 24 | Reverse | Off | Off |  .rdt 0xC8 |
-| 25 | Idle TX | Off | Off |  .rdt 0xC8 |
-| 26 | Slot Suit | Off | Off |  .rdt 0xC8 |
-| 27 | AES Digital Encryption | Normal Encryption | Normal Encryption |  .rdt 0x11A |
-| 28 | Digital Encryption | Off | Off |  .rdt 0xC8 |
-| 29 | Call Confirmation | Off | Off |  .rdt 0xC8 |
+| 23 | PTT Prohibit | Off | Off | used by cfw .rdt 0xFA |
+| 24 | Reverse | Off | Off | used by cfw .rdt 0xC8 |
+| 25 | Idle TX | Off | Off | stored .rdt 0xC8 |
+| 26 | Slot Suit | Off | Off | stored .rdt 0xC8 |
+| 27 | AES Digital Encryption | Normal Encryption | Normal Encryption | used by cfw .rdt 0x11A |
+| 28 | Digital Encryption | Off | Off | used by cfw .rdt 0xC8 |
+| 29 | Call Confirmation | Off | Off | stored .rdt 0xC8 |
 | 30 | Talk Around(Simplex) | Off | Off, On | cfw field .rdt 0xC8 |
-| 31 | Work Alone | Off | Off |  .rdt 0xFC |
-| 32 | Custom CTCSS | 251.1 | 251.1, 0.0 |  .rdt 0xC8, 0x105, 0x106 |
-| 33 | 2TONE Decode | 0 | 0, 1 |  .rdt 0xC8, 0x125 |
-| 34 | Ranging | Off | Off |  .rdt 0xC8 |
-| 35 | Through Mode | Off | Off |  .rdt 0xC8 |
-| 36 | APRS RX | Off | Off |  .rdt 0xC8 |
-| 37 | Analog APRS PTT Mode | Off | Off |  .rdt 0xC8 |
-| 38 | Digital APRS PTT Mode | Off | Off |  .rdt 0xC8 |
-| 39 | APRS Report Type | Off | Off |  .rdt 0xC8 |
-| 40 | Digital APRS Report Channel | 1 | 1 |  .rdt 0xC8 |
-| 41 | Correct Frequency[Hz] | 0 | 0 |  .rdt 0x12B |
-| 42 | SMS Confirmation | Off | Off |  .rdt 0xC8 |
-| 43 | Exclude channel from roaming | 0 | 0 |  .rdt 0x130 |
-| 44 | DMR MODE | 0 | 0 |  .rdt 0xC8, 0x127, 0x131 |
-| 45 | DataACK Disable | 0 | 0 |  .rdt 0xC8, 0x136 |
-| 46 | R5ToneBot | 0 | 0 |  .rdt 0xC8, 0x137 |
-| 47 | R5ToneEot | 0 | 0 |  .rdt 0xC8, 0x138 |
-| 48 | Auto Scan | 0 | 0 |  .rdt 0xC8, 0x139 |
-| 49 | Ana Aprs Mute | 0 | 0 |  .rdt 0xC8, 0x13A |
-| 50 | Send Talker Aias | 0 | 0 |  .rdt 0xC8, 0x13B |
-| 51 | AnaAprsTxPath | 0 | 0 |  .rdt 0xC8, 0x13D |
-| 52 | ARC4 | 0 | 0 |  .rdt 0xC8 |
-| 53 | ex_emg_kind | 0 | 0 |  .rdt 0x13E |
-| 54 | idle_tx | 0 | 0 |  .rdt 0x13F |
-| 55 | Compand | 0 | 0 |  .rdt 0x140 |
-| 56 | DisturEn | 0 | 0 |  .rdt 0xC8, 0x143 |
-| 57 | DisturFreq | 0 | 0 |  .rdt 0xC8, 0x144 |
-| 58 | Rpga_Mdc | 0 | 0 |  .rdt 0xC8, 0x145 |
-| 59 | dmr_crc_ignore | 0 | 0 |  .rdt 0xC8, 0x146 |
-| 60 | txcc | 1 | 1 |  |
+| 31 | Work Alone | Off | Off | used by cfw .rdt 0xFC |
+| 32 | Custom CTCSS | 251.1 | 251.1, 0.0 | stored .rdt 0xC8, 0x105, 0x106 |
+| 33 | 2TONE Decode | 0 | 0, 1 | used by cfw .rdt 0xC8, 0x125 |
+| 34 | Ranging | Off | Off | stored .rdt 0xC8 |
+| 35 | Through Mode | Off | Off | stored .rdt 0xC8 |
+| 36 | APRS RX | Off | Off | stored .rdt 0xC8 |
+| 37 | Analog APRS PTT Mode | Off | Off | used by cfw .rdt 0xC8 |
+| 38 | Digital APRS PTT Mode | Off | Off | stored .rdt 0xC8 |
+| 39 | APRS Report Type | Off | Off | used by cfw .rdt 0xC8 |
+| 40 | Digital APRS Report Channel | 1 | 1 | stored .rdt 0xC8 |
+| 41 | Correct Frequency[Hz] | 0 | 0 | used by cfw .rdt 0x12B |
+| 42 | SMS Confirmation | Off | Off | stored .rdt 0xC8 |
+| 43 | Exclude channel from roaming | 0 | 0 | used by cfw .rdt 0x130 |
+| 44 | DMR MODE | 0 | 0 | used by cfw .rdt 0xC8, 0x127, 0x131 |
+| 45 | DataACK Disable | 0 | 0 | stored .rdt 0xC8, 0x136 |
+| 46 | R5ToneBot | 0 | 0 | used by cfw .rdt 0xC8, 0x137 |
+| 47 | R5ToneEot | 0 | 0 | used by cfw .rdt 0xC8, 0x138 |
+| 48 | Auto Scan | 0 | 0 | used by cfw .rdt 0xC8, 0x139 |
+| 49 | Ana Aprs Mute | 0 | 0 | stored .rdt 0xC8, 0x13A |
+| 50 | Send Talker Aias | 0 | 0 | used by cfw .rdt 0xC8, 0x13B |
+| 51 | AnaAprsTxPath | 0 | 0 | stored .rdt 0xC8, 0x13D |
+| 52 | ARC4 | 0 | 0 | used by cfw .rdt 0xC8 |
+| 53 | ex_emg_kind | 0 | 0 | stored .rdt 0x13E |
+| 54 | idle_tx | 0 | 0 | stored .rdt 0x13F |
+| 55 | Compand | 0 | 0 | stored .rdt 0x140 |
+| 56 | DisturEn | 0 | 0 | stored .rdt 0xC8, 0x143 |
+| 57 | DisturFreq | 0 | 0 | stored .rdt 0xC8, 0x144 |
+| 58 | Rpga_Mdc | 0 | 0 | used by cfw .rdt 0xC8, 0x145 |
+| 59 | dmr_crc_ignore | 0 | 0 | stored .rdt 0xC8, 0x146 |
+| 60 | txcc | 1 | 1 | stored |
 
 ### RadioIDList (list, LST index 1)
 
