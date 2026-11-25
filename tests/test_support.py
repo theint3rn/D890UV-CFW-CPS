@@ -56,7 +56,7 @@ def test_generator_keeps_states(tmp_path):
     assert G.build(SU.data()) == SU.data()                           # the shipped file is up to date
 
 
-def test_gui_rules():
+def test_page_rules():
     SU.set_data({"sections": {"OptionalSetting": {"D890UV": "stored"}, "AMAir": {"D890UV": "n/a"}},
                  "keys": {"OptionalSetting": {"Beep": {"D890UV": "used"}, "TOT": {"D890UV": "n/a"}}}})
     vis, note, star = SU.page_marks("D890UV", "OptionalSetting", ["Beep", "TOT", "VOX"])
@@ -76,28 +76,3 @@ def test_view_vector():
         SU.set_data(d)
         for m in ST.MODELS:
             assert SU.view(m, ST.use(m)) == v["views"][name][m], (name, m)
-
-
-def test_gui_hides_na_and_marks_stored():
-    tk = pytest.importorskip("tkinter")
-    if not os.environ.get("DISPLAY"):
-        pytest.skip("no display")
-    try:
-        root = tk.Tk()
-    except tk.TclError:
-        pytest.skip("no display")
-    root.withdraw()
-    from cps import gui
-    try:
-        for m, hidden in (("D890UV", "stock:QDC1200AddressBook"), ("D168UV", "stock:AMAir")):
-            SU.set_data(json.loads(json.dumps(SU.data())))
-            SU.data()["sections"]["FM"][m] = "n/a"                    # a node the stock CPS has, hidden by the map
-            app = gui.App(root, None, "tcp:127.0.0.1:1", model=m)
-            pages = set(app.nav_page.values())
-            assert hidden not in pages and "stock:FM" not in pages and "stock:AutoRepeaterOffsetFrequencys" in pages
-            text = {app.nav.item(i, "text"): k for i, k in app.nav_page.items()}
-            assert "Channel" in text and "APRS *" in text and "Zone" in text
-            for w in root.winfo_children():
-                w.destroy()
-    finally:
-        root.destroy()

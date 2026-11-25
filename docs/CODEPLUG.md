@@ -35,7 +35,7 @@ All integers are little endian. "none" references are `0xFFFF` (u16) or `0xFF` (
 
 The model selects the stock CPS data model of section 10 (table ids are positions in that model's stock table order) and
 the radio the codeplug may be written to: the CPS refuses to write a D890UV codeplug to a D168UV cfw and vice versa
-(convert it first: GUI Radio model, `cfw_cps.py export --model`, web "Radio" selector). Everything else in the format is
+(convert it first: `cfw_cps.py export --model`, web "Radio" selector). Everything else in the format is
 the same for both radios. A firmware should reject a codeplug whose model is not its own.
 
 The firmware accepts the codeplug only if all of these hold: the magic matches, the version is 1, the length is in range, the CRC matches, every section is inside the blob, and there is at least one channel. Otherwise it falls back to the stock NAND channels plus its built-in channels.

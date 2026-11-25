@@ -1,4 +1,4 @@
-"""Radio operations shared by the CLI and the GUI."""
+"""Radio operations used by the CLI."""
 import time
 
 from . import codeplug as C, link, validate as V, diff as D

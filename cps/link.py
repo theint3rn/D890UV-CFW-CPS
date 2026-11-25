@@ -2,7 +2,7 @@
 
 Ports:  tcp:HOST:PORT   emulator USART1 socket (Renode CreateServerSocketTerminal)
         /dev/ttyXXX     programming cable (115200 8N1, raw termios; no pyserial needed)
-        COM3            Windows (kernel32 via ctypes, also in the .exe)
+        COM3            Windows (kernel32 via ctypes)
 Safety: this module only speaks the codeplug protocol. It refuses radios that do not identify as the cfw
 ("D890CFW" on the D890UV, "D168CFW" on the D168UV; codeplug.MODELS), so a stock radio is never written, and it has no firmware / bootloader / NAND commands.
 Serial (real hardware) writes additionally need allow_hardware=True (CLI: --allow-hardware), which is only to
@@ -116,7 +116,7 @@ class SerialPort:
 
 
 class WinSerialPort:
-    """Windows COM port (COM3, \\\\.\\COM12) through kernel32 with ctypes: no pyserial needed in the .exe."""
+    """Windows COM port (COM3, \\\\.\\COM12) through kernel32 with ctypes: no pyserial needed."""
     hardware = True
 
     def __init__(self, name, baud=115200, timeout=5.0):

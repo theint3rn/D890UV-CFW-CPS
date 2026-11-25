@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""cfw_cps: codeplug programming software for the D890UV and D168UV custom firmware (cfw).
+"""cfw_cps: codeplug command line tool for the D890UV and D168UV custom firmware (cfw). The editor is the web CPS (web/).
 
   cfw_cps.py read PORT -o radio.d8cp            read the radio (.d8cp binary, .json, .yaml)
   cfw_cps.py write PORT FILE [--yes]            validate, show diff, write, verify (codeplug only)
@@ -11,7 +11,6 @@
   cfw_cps.py diff A B                           what would change
   cfw_cps.py info PORT                          identify + info block
   cfw_cps.py show FILE                          summary
-  cfw_cps.py gui [FILE] [--model M]             Tkinter editor (radio model of a new codeplug; File > Radio Model)
 An .rdt that was not opened from one is written on the built-in blank file, or on --rdt-template FILE (README).
 PORT: tcp:localhost:3470 (emulator) or /dev/ttyUSB0 (cable; writes need --allow-hardware + the owner's OK).
 """
@@ -69,9 +68,6 @@ def main(argv=None):
     a = sub.add_parser("diff"); a.add_argument("a"); a.add_argument("b")
     a = sub.add_parser("info"); a.add_argument("port")
     a = sub.add_parser("show"); a.add_argument("file")
-    a = sub.add_parser("gui"); a.add_argument("file", nargs="?")
-    a.add_argument("--model", default="D890UV", choices=models, help="radio model of a new codeplug")
-    a.add_argument("--port", default="tcp:localhost:3470")
     for p in sub.choices.values():
         p.add_argument("--timeout", type=float, default=5.0)
         p.add_argument("--rdt-template", action="append", default=[], metavar="FILE",
@@ -144,9 +140,6 @@ def main(argv=None):
                 print("%-16s %s" % (k, hex(v) if k in ("base", "size", "crc") else v))
         elif args.cmd == "show":
             show(C.load(args.file))
-        elif args.cmd == "gui":
-            from cps import gui
-            gui.run(args.file, args.port, model=args.model)
     except (C.CodeplugError, link.LinkError, OSError, ValueError) as e:
         print("error: %s" % e, file=sys.stderr)
         return 1

@@ -22,7 +22,7 @@ RDT = os.path.join(ROOT, "schema", "rdt_map.json")
 INTRO = """# Stock D890UV CPS (V1.05) map
 
 What the stock AnyTone D890UV CPS shows and stores, as found by running it under Wine (scratch prefix, COM ports pointed
-at `/dev/null`, no radio attached, nothing written to a radio). The cfw CPS (desktop, web, binaries) uses this as its
+at `/dev/null`, no radio attached, nothing written to a radio). The cfw CPS uses this as its
 stock model: `schema/stock_d890uv.json` is generated from the same sources by `tools/make_stock_schema.py`.
 
 Sources:

@@ -36,7 +36,7 @@ ES modules do not load from `file://`, so a local server is needed. Any static s
 * **WebSocket bridge:** `python3 ../tools/ws_bridge.py --target tcp:localhost:3471` (emulator USART1) or `--target /dev/pts/N`. Add `--http 8000` to also serve this folder. Browsers cannot open a pty or a raw TCP socket, so the bridge passes bytes through unchanged.
 * **Demo radio:** a JS model of the firmware side, kept in the page.
 
-Same safety rules as the desktop CPS: the app speaks the codeplug protocol only, refuses radios that do not identify as `D890CFW`, and has no firmware commands.
+Safety rules: the app speaks the codeplug protocol only, refuses radios that do not identify as `D890CFW`, and has no firmware commands.
 
 The JS and Python sides produce **identical bytes**. `tests/make_vectors.py` writes the shared vectors: sample, minimal, invalid, `synth` (the synthetic test codeplug, `tools/make_synth.py`), a diff case, two CSV cases, `digital` (every digital section) and `synthstock` (stock CSV set); with the private stock CPS files (`$CFW_CPS_PRIVATE`, README "Stock CPS files") also a real D878UV import, the stock CSV exports and the decoded stock `.rdt` files. `run_tests.mjs` (85 checks with them, 52 without, 2026-11-23) checks that the JS side produces the same results for each:
 * decode and encode;

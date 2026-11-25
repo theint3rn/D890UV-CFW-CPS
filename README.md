@@ -2,13 +2,12 @@
 
 This is a CPS for the custom firmware in `../cfw` (D890UV) and `D168UV/cfw` (D168UV, see "D168UV" below). It does **codeplug programming only**. It cannot flash firmware, and it never touches the bootloader, the option bytes or the stock NAND.
 
-There are three front ends. They share one codeplug format and produce identical bytes:
+The CPS is the **web CPS**. The Python part is a command line tool and the reference encoder for the tests; there is no desktop program. Both share one codeplug format and produce identical bytes:
 
-| Front end | Where | Notes |
+| Part | Where | Notes |
 |---|---|---|
-| Desktop: CLI + Tkinter GUI | `cfw_cps.py` | Python 3, standard library only (PyYAML optional, for YAML export) |
-| Stand-alone x86-64 binaries | `dist/cfw_cps-linux-x86_64`, `dist/cfw_cps-windows-x64.exe` | The desktop CPS built with PyInstaller; no Python needed |
 | Web CPS | `web/` ([web/README.md](web/README.md)) | Static HTML/JS, works offline; Web Serial, or the WebSocket bridge for the emulator |
+| Command line tool | `cfw_cps.py` | Python 3, standard library only (PyYAML optional, for YAML export): read, write, import, export, validate, diff |
 
 ![web CPS, synthetic test codeplug](screens/web_channels_demo.png)
 
@@ -30,7 +29,7 @@ The cfw CPS follows the stock D890UV CPS V1.05 (mapped in [docs/STOCK_CPS_MAP.md
   `python3 tools/make_cfw_support.py --set AMAir D890UV used` (or `--set "Channel:Squelch Mode" D168UV used`; it
   also copies the file to `web/schema/`), then `make vectors` and `python3 tools/make_stock_map_doc.py [D168UV]`.
 * **Dialogs kept only in the `.rdt`** (Alarm Setting, DTMF / 2Tone / 5Tone settings and 5Tone information codes, Talk / AIR
-  Alias, Friends List, the D168UV Encryption Code): decoded from the stock CPS, editable in both GUIs, carried in the cfw
+  Alias, Friends List, the D168UV Encryption Code): decoded from the stock CPS, editable in the web CPS, carried in the cfw
   codeplug (section 10 tables 64-72, `docs/CODEPLUG.md`) and written back to the `.rdt`
   (`schema/rdt_dialogs.json`, fields in `docs/STOCK_CPS_MAP*.md`). Local Information is live radio data, not stored.
 * **Same files:** import/export the stock CSV set (.LST + 38 CSV) byte for byte; import D878UV (V1270) `.rdt`;
@@ -61,7 +60,7 @@ Added for the cfw digital modes ("cfw Digital Modes" in the tree, plus per-mode 
 | YSF | RX / TX DG-ID, DN / VW / DATA, Wires-X | Wires-X room, auto connect |
 | all | encryption keys (user-entered: DMR BP / ARC4 / AES, P25 DES / AES / ADP, NXDN scrambler / DES / AES) | |
 
-Every new field is in the codeplug format (docs/CODEPLUG.md sections 10-15), the CLI, the web app and the binaries, and
+Every new field is in the codeplug format (docs/CODEPLUG.md sections 10-15), the CLI and the web app, and
 is validated; the JS and Python encoders produce identical bytes (tests/vectors: `digital`, `synth`, `synthstock`).
 
 ## D168UV
@@ -77,9 +76,8 @@ The same CPS programs the D168UV cfw (`D168UV/cfw`, AT32F403A). One code base, a
 | Codeplug | "D8CP" v1, header model id 0 | the same format, header model id 1 (`docs/CODEPLUG.md`) |
 | Radio link ident | `D890CFW` | `D168CFW` (USART1 PA9/PA10 115200, region 0x080A0000, 384 KB) |
 
-* **Model switch:** GUI toolbar "Radio" and File > Radio model (converts the open codeplug), File > New D168UV codeplug;
-  web: the "Radio" selector next to New (`index.html?model=D168UV` starts with a D168 codeplug); CLI:
-  `cfw_cps.py new --model D168UV -o x.d8cp`, `import SRC --model D168UV`, `export FILE --model D168UV -o OUT`, `gui --model D168UV`.
+* **Model switch:** web: the "Radio" selector next to New (`index.html?model=D168UV` starts with a D168 codeplug); CLI:
+  `cfw_cps.py new --model D168UV -o x.d8cp`, `import SRC --model D168UV`, `export FILE --model D168UV -o OUT`.
 * **Conversion** keeps all cfw data (channels with every digital mode, zones, scan lists, contacts, TG lists, trunk
   systems, keys, D-STAR repeaters, digital settings). Stock CPS tables both CPS have keep their common columns; tables /
   columns the target CPS does not have are dropped (NXSetting, AM Air, ... going to the D168).
@@ -93,7 +91,7 @@ The same CPS programs the D168UV cfw (`D168UV/cfw`, AT32F403A). One code base, a
 * **Digital modes:** all cfw digital settings (DMR incl. Tier III trunking, P25 Phase 1/2 + trunking, NXDN incl. Type-C/D,
   D-STAR, YSF, encryption keys) are model independent and are in the D168 tree under "cfw Digital Modes" (Tier III
   Systems also under Digital), and in the channel editor.
-* **Bluetooth page** (Public > Bluetooth, and a Bluetooth tab in Optional Setting; GUI and web): the stock D168 CPS
+* **Bluetooth page** (Public > Bluetooth, and a Bluetooth tab in Optional Setting): the stock D168 CPS
   has no BT page, but the radio has a BT menu and the codeplug holds its settings. Labels and value lists are the
   radio's (Settings > BT): BT On/Off, Hold Time (OFF, 1S-30S, 60S, 120S, infinite), RX Delay (30ms, 1S-5.5S),
   BT+int spk, Mic Gain / Spk Gain (Level 1-5), plus `BhtPttHold` and `MicInBlueTooth` (stock keys with no radio menu, raw).
@@ -113,7 +111,7 @@ python3 tools/emu_roundtrip.py --model D168UV                                   
 ```
 
 Tests: `tests/test_d168.py` (schema, CSV set byte for byte, binary / JSON keep the model, .rdt open + save, conversion,
-link with a `D168CFW` fake radio, CLI), `tests/test_gui.py::test_gui_d168_model`, the D168 vectors in `tests/vectors`
+link with a `D168CFW` fake radio, CLI), the D168 vectors in `tests/vectors`
 (`synthstock_d168`, `digital_d168`; with the private stock files also `new_v1292`, `bt_v1292.rdt` = Bluetooth page
 values) checked by `node web/test/run_tests.mjs`.
 
@@ -165,8 +163,7 @@ saved or exported, and real codeplugs. What needs them:
 ```sh
 cd D890UV_src/cfw_cps
 python3 cfw_cps.py import my_d878.rdt -o my.d8cp     # AnyTone .rdt -> cfw
-python3 cfw_cps.py gui examples/synth.d8cp           # the synthetic test codeplug
-python3 cfw_cps.py gui my.d8cp                       # editor (File / Radio / Tools menus)
+make web                                             # editor: the web CPS on http://localhost:8000/ (see "Web CPS")
 python3 cfw_cps.py validate my.d8cp
 python3 cfw_cps.py write tcp:localhost:3470 my.d8cp  # diff, confirm, write, read back, compare
 python3 cfw_cps.py read  tcp:localhost:3470 -o radio.d8cp
@@ -177,36 +174,8 @@ python3 cfw_cps.py info tcp:localhost:3470
 make test        # unit tests (pytest), including the JS core vs the Python vectors
 make emu-test    # round trip against the cfw running in Renode
 # hand testing: front panel + CPS on one emulated radio (emu/webui.py --uart-socket)
-python3 ../emu/webui.py --launch cfw --uart-socket usart1:3470   # then: cfw_cps.py gui (port tcp:localhost:3470)
+python3 ../emu/webui.py --launch cfw --uart-socket usart1:3470   # then: web CPS through tools/ws_bridge.py, or the CLI on tcp:localhost:3470
 ```
-
-## Binaries (x86-64)
-
-```sh
-dist/cfw_cps-linux-x86_64 gui my.d8cp                   # same commands as cfw_cps.py
-wine dist/cfw_cps-windows-x64.exe ...  /  on Windows: cfw_cps-windows-x64.exe read COM3 -o radio.d8cp
-make exe                                                 # = tools/build_exe.sh linux (PyInstaller onefile)
-WINEPREFIX=/path/to/scratch/prefix PY_WIN_INSTALLER=python-3.12.10-amd64.exe make exe-win
-```
-
-* **`make exe`** uses PyInstaller if it is installed. If not, it creates `build/venv` and installs PyInstaller there.
-* **`make exe-win`** builds under Wine. The prefix must be a scratch prefix, never `~/.wine`. On the first run it installs the given python.org Windows installer (with Tcl/Tk) into the prefix, then runs PyInstaller there.
-* **On Windows itself:** run `py -m pip install pyinstaller && py -m PyInstaller --onefile --name cfw_cps-windows-x64 --distpath dist cfw_cps.py` in `cfw_cps\`.
-* **Serial ports:** the binaries reach `tcp:` ports (emulator) and serial ports. Linux uses termios. Windows `COMn` goes through kernel32 via ctypes, so no pyserial is needed.
-
-Checked on this machine (2026-11-20; rebuilt and re-checked 2026-11-21):
-
-| Check | Linux binary | Windows .exe (Wine 10) |
-|---|---|---|
-| Size | 12.7 MB | 10.5 MB |
-| `import` a real D878UV codeplug | same 96 592 bytes as the Python CPS | same 96 592 bytes as the Python CPS |
-| `validate` / `export` / `--help` | ok | ok |
-| 2026-11-21: stock CSV set, `digital` vector, stock `.rdt` open + save byte-identical, NX Setting from `.rdt` | ok | ok |
-| `write` + verify + `read` | fake radio over TCP: ok | fake radio over TCP: ok |
-| COM port | — | COM9 → pty → fake radio: ok, and a write without `--allow-hardware` is refused |
-| GUI | starts | starts |
-
-The .exe has not been run on real Windows.
 
 ## Web CPS
 
@@ -215,7 +184,7 @@ cd web && python3 -m http.server 8000 --bind 127.0.0.1        # http://localhost
 python3 tools/ws_bridge.py --target tcp:localhost:3471 --http 8000   # + WebSocket bridge to the emulator USART1
 ```
 
-The web CPS has the same features as the desktop one:
+The web CPS does:
 * open / save `.d8cp` / `.json`;
 * `.rdt` and CSV import, CSV export;
 * channel table with per-mode fields;
@@ -233,7 +202,7 @@ Radio links are Web Serial (Chrome / Edge), the WebSocket bridge and an in-page 
 
 Screens: `screens/web_*_demo.png` (synthetic codeplug), `screens/web_emu_after_write.png`. The browser tests need `playwright-core` on `NODE_PATH` (`npm i playwright-core`) and an installed Chromium (`/usr/bin/chromium`). No browser download is needed.
 
-| Input (`import`, GUI File > Import) | What is read |
+| Input (CLI `import`; `.rdt` and `.csv` also in the web CPS) | What is read |
 |---|---|
 | `.rdt` (AnyTone D878UV / D890UV CPS) | Channels, zones, scan lists, talkgroups / contacts, RX group lists, radio ID. The user database is counted, not imported. |
 | `.csv`, CHIRP layout | FM channels: duplex / offset / split, Tone / TSQL / DTCS / Cross, skip |
@@ -243,15 +212,7 @@ Screens: `screens/web_*_demo.png` (synthetic codeplug), `screens/web_emu_after_w
 
 The format is described in [docs/CODEPLUG.md](docs/CODEPLUG.md): binary layout, link protocol, RDT layout, validation rules.
 
-**GUI.** The tabs are:
-* Channels: table plus an editor, with per-mode fields for FM, DMR, P25, P25P2, NXDN, D-STAR and YSF. Use Apply to store an edit.
-* Zones, Scan lists and TG lists: list editors with ordered members.
-* Contacts / TGs.
-* Trunk systems: P25 or DMR Tier III, with control channels, WACN / system ID / NAC and a TG priority list.
-* Settings.
-* Log.
-
-Radio > Write validates the codeplug first and refuses on errors. It then reads the radio and shows the diff in a dialog, and writes only after you confirm. Afterwards it reads the codeplug back and compares it. Edits shift the zone and scan list references when channels are inserted, deleted or moved.
+Writing (web CPS or CLI) validates the codeplug first and refuses on errors. It then reads the radio and shows the diff, and writes only after you confirm. Afterwards it reads the codeplug back and compares it. Edits shift the zone and scan list references when channels are inserted, deleted or moved.
 
 ## Radio side
 
@@ -282,31 +243,28 @@ The radio side is in `cfw/app/prog.c` (link) and `cfw/app/cfwcp.c` (store and lo
 
 Found with the synthetic codeplug: when the stock entries in codeplug section 10 do not end on a 4-byte boundary, the
 radio edits journal starts after 1-3 zero padding bytes; the CPS decoders (Python + JS) now skip that padding (before,
-`decode` failed with KeyError 'Channel'). The firmware's `stock_walk` in `cfw/app/cfwcp.c` has the same issue.
+`decode` failed with KeyError 'Channel'). The firmware's `stock_walk` in `cfw/app/cfwcp.c` had the same issue (fixed).
 
 Earlier, 2026-11-21 (with a real 1405-channel codeplug, since replaced by the synthetic one):
 
 | Suite | Result | What |
 |---|---|---|
-| `pytest tests` (`make test`) | 64 pass, 2 GUI tests skipped without `$DISPLAY` | Format round trips (binary / JSON / YAML) byte for byte, header layout vs the firmware structs, CRC, tones, validation (incl. every digital rule), size limit, diff, D878UV import, CHIRP / cfw CSV, link vs `fake_radio.py` (write order, cancel, invalid refused, stock radio refused, write-protected build, hardware-port guard), stock CSV set byte for byte, all digital sections, `.rdt` V1323 (open+save identical, edits, OptionalSetting, NX Setting = stock CPS bytes) |
-| `pytest tests/test_gui.py` with `$DISPLAY` | 2 pass | GUI: stock tree pages, digital pages, channel edit → write |
+| `pytest tests` (`make test`) | 64 pass | Format round trips (binary / JSON / YAML) byte for byte, header layout vs the firmware structs, CRC, tones, validation (incl. every digital rule), size limit, diff, D878UV import, CHIRP / cfw CSV, link vs `fake_radio.py` (write order, cancel, invalid refused, stock radio refused, write-protected build, hardware-port guard), stock CSV set byte for byte, all digital sections, `.rdt` V1323 (open+save identical, edits, OptionalSetting, NX Setting = stock CPS bytes) |
 | `node web/test/run_tests.mjs` | 47 pass | JS core = Python on every vector (decode / encode / issues / diff / imports / stock CSV / `.rdt` / NX Setting) |
 | `web/test/browser_test.mjs` (headless Chromium) | 20 pass | the web app: nav tree, stock pages, keys, channel ext, demo-radio write + verify, `.rdt` open / save byte-identical |
 | `tools/web_emu_test.py` | PASS | web app → WebSocket bridge → Renode cfw: write, diff, verify, power cycle, Python CLI reads the same bytes |
 | `tools/emu_roundtrip.py` | PASS | Renode cfw (`build_cps`, 384 KB region): a codeplug with every section (9 728 B) and a stock CSV import (205 072 B, more than the old 128 KB): identify, write, END ack, read back byte for byte, screen shows the channel, power cycle, read back again |
-| binaries | ok | see "Binaries" |
 
 D168UV (2026-11-21):
 
 | Suite | Result | What |
 |---|---|---|
-| `pytest tests` | 80 pass (with `$DISPLAY`) | everything above plus `tests/test_d168.py` (13) and the D168 GUI test |
+| `pytest tests` | 80 pass | everything above plus `tests/test_d168.py` (13) |
 | `node web/test/run_tests.mjs` | 64 pass | adds the D168 vectors: CSV set → same bytes as Python, all 28 files written back byte for byte, conversion, `.rdt` V1292 reader / writer, the stock-CPS-checked file |
 | stock D168 CPS V1.07 (Wine) | ok | opens `.rdt` files written by cfw (a real codeplug trimmed; CSV import + an added P25 channel + TOT) and saves them back byte for byte; Optional Setting values written by cfw show in its dialog |
 | `make emu-test-d168` | PASS | D168UV cfw (`D168UV/cfw/build/cfw168.elf`) in `D168UV/emu`: identify `D168CFW`, write a 1405-channel codeplug (96 736 B), screen shows the channel, read back byte for byte, power cycle, still there, read back again (`screens/d168_after_write.png`, `d168_after_power_cycle.png`) |
 | `make emu-test` (D890UV) | PASS | unchanged after the model work |
 | web app in the desktop app's browser | ok | Radio selector → D168 tree, Optional Setting tabs, demo radio (`D168CFW`) write + verify + read |
-| binaries | ok | Linux + Windows (Wine) rebuilt: D168 CSV set import = Python bytes, D168 `.rdt` open + save identical, `new --model D168UV` |
 
 Fixes found on the way (both models): the `.rdt` header u32 at offset 5 (file length - 14) is now written (the stock
 CPS refuses a file with a stale value); channel records are written in number order and an added channel gets a free
@@ -329,19 +287,16 @@ The digital channels show the codeplug fields: `screens/all_modes_ch6_p25_trunk.
 ## Layout
 
 ```
-cfw_cps.py            CLI (read / write / import / export / validate / diff / info / show / gui)
+cfw_cps.py            CLI (read / write / import / export / validate / diff / info / show)
 cps/codeplug.py       model, binary format (reference encoder), JSON / YAML
 cps/validate.py       validation          cps/diff.py   diff before writing
 cps/import_rdt.py     AnyTone .rdt        cps/import_csv.py  CHIRP / cfw CSV (+ export)
 cps/import_nand.py    stock D890UV memory image (channels)
 cps/link.py           protocol client, TCP / serial ports, safety checks
-cps/ops.py            read / write with validation, diff, confirm and verify (CLI and GUI)
-cps/gui.py            Tkinter GUI
+cps/ops.py            read / write with validation, diff, confirm and verify
 web/                  web CPS (js/codeplug.js, importers.js, link.js, app.js; test/)
 tools/ws_bridge.py    WebSocket <-> TCP / pty bridge (stdlib) for the web CPS
 tools/web_emu_test.py web CPS round trip against Renode
-tools/build_exe.sh    PyInstaller builds (Linux, Windows under Wine)
-dist/                 cfw_cps-linux-x86_64, cfw_cps-windows-x64.exe
 tests/vectors/        shared Python <-> JS vectors (tests/make_vectors.py)
 tests/                pytest; fake_radio.py = Python model of the firmware side
 tools/emu_roundtrip.py   emulator round trip (default codeplug examples/synth.d8cp)

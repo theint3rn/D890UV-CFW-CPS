@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build schema/stock_d890uv.json: the stock D890UV CPS (V1.05) data model, shared by the desktop and web CPS.
+"""Build schema/stock_d890uv.json: the stock D890UV CPS (V1.05) data model, shared by the Python core and the web CPS.
 
 Sources:
   stock_defaults/*.CSV         "Export All" of a new (factory default) codeplug from the stock CPS: table names, column
