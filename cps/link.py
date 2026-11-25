@@ -6,7 +6,7 @@ Ports:  tcp:HOST:PORT   emulator USART1 socket (Renode CreateServerSocketTermina
 Safety: this module only speaks the codeplug protocol. It refuses radios that do not identify as the cfw
 ("D890CFW" on the D890UV, "D168CFW" on the D168UV; codeplug.MODELS), so a stock radio is never written, and it has no firmware / bootloader / NAND commands.
 Serial (real hardware) writes additionally need allow_hardware=True (CLI: --allow-hardware), which is only to
-be used once the owner has approved hardware writes (CLAUDE.md).
+be used once the owner has approved hardware writes (project notes).
 """
 import os
 import select

@@ -359,7 +359,7 @@ A channel only lists the fields of its mode. References are 0-based indices; `nu
 
 ## Link (radio side, `cfw/app/prog.c`)
 
-The link uses USART1, the programming-cable UART: 115200 8N1, PB6 TX / PB7 RX AF7. These pins are not verified on a real radio. The framing is the stock D890UV PC link (CLAUDE.md "PC link"). Addresses are big endian.
+The link uses USART1, the programming-cable UART: 115200 8N1, PB6 TX / PB7 RX AF7. These pins are not verified on a real radio. The framing is the stock D890UV PC link (project notes "PC link"). Addresses are big endian.
 
 | Host → radio | Radio → host |
 |---|---|

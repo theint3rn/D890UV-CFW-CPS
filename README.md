@@ -268,7 +268,7 @@ The radio side is in `cfw/app/prog.c` (link) and `cfw/app/cfwcp.c` (store and lo
 
 * The CPS only speaks the codeplug protocol. It has no firmware, bootloader, option-byte or NAND command.
 * It refuses radios that do not identify as `D890CFW`, so a stock D890UV is never written.
-* Writing over a serial device needs `--allow-hardware`. Do not use it until the owner has approved writes to real hardware (CLAUDE.md). The only allowed path for anything flash-related on hardware is `tools/hw/hw.py`. Real-hardware testing has **not** been done.
+* Writing over a serial device needs `--allow-hardware`. Do not use it until the owner has approved writes to real hardware (project notes). The only allowed path for anything flash-related on hardware is `tools/hw/hw.py`. Real-hardware testing has **not** been done.
 
 ## Tested
 
